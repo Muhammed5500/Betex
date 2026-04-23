@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Hardhat build output
+artifacts/
+cache/
+typechain-types/
+
+# Env / secrets
+.env
+decryptor/config/node*.env
+decryptor/config/testnet-wallets.json
+
+# Runtime
+logs/
+
+# Next.js
+.next/
+frontend/dist/
+out/
+frontend/tsconfig.tsbuildinfo
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

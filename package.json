@@ -1,0 +1,38 @@
+{
+  "name": "btx-monad",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Paper-faithful BTX implementation on Monad",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"js/test/*.test.js\"",
+    "test:watch": "node --test --watch \"js/test/*.test.js\"",
+    "test:bls": "node --test js/test/bls.test.js",
+    "test:setup": "node --test js/test/setup.test.js",
+    "test:encrypt": "node --test js/test/encrypt.test.js",
+    "test:roundtrip": "node --test js/test/roundtrip.test.js",
+    "gen:vectors": "node js/scripts/generate-schnorr-vectors.js && node js/scripts/generate-eip2537-vectors.js",
+    "compile": "hardhat --config hardhat.config.cjs compile",
+    "test:sol": "hardhat --config hardhat.config.cjs test",
+    "setup": "node decryptor/scripts/trusted-setup.js",
+    "deploy:local": "hardhat --config hardhat.config.cjs run scripts/full-deploy-local.cjs --network localhost",
+    "deploy:monad": "hardhat --config hardhat.config.cjs run scripts/deploy-monad.cjs --network monadTestnet",
+    "node:hh": "hardhat --config hardhat.config.cjs node",
+    "committee:0": "node --env-file=decryptor/config/node0.env decryptor/node.js",
+    "committee:1": "node --env-file=decryptor/config/node1.env decryptor/node.js",
+    "committee:2": "node --env-file=decryptor/config/node2.env decryptor/node.js"
+  },
+  "dependencies": {
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.6.1",
+    "dotenv": "^17.4.2",
+    "hardhat": "^2.28.6"
+  }
+}
