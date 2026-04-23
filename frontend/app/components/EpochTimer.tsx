@@ -10,7 +10,7 @@ export function EpochTimer() {
     abi: ENCRYPTED_POOL_ABI,
     address: ADDRESSES.encryptedPool,
     functionName: 'currentEpochId',
-    query: { enabled: addressesConfigured, refetchInterval: 2_000 },
+    query: { enabled: addressesConfigured, refetchInterval: 6_000 },
   });
 
   const { data: epoch } = useReadContract({
@@ -18,7 +18,7 @@ export function EpochTimer() {
     address: ADDRESSES.encryptedPool,
     functionName: 'epochs',
     args: epochId !== undefined ? [epochId as bigint] : undefined,
-    query: { enabled: addressesConfigured && epochId !== undefined, refetchInterval: 1_000 },
+    query: { enabled: addressesConfigured && epochId !== undefined, refetchInterval: 4_000 },
   });
 
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));

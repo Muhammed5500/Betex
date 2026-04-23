@@ -70,7 +70,7 @@ export function SwapCard() {
     address: cfgIn.address,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: Boolean(address) && addressesConfigured, refetchInterval: 5_000 },
+    query: { enabled: Boolean(address) && addressesConfigured, refetchInterval: 15_000 },
   });
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({

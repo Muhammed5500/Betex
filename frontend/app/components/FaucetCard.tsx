@@ -30,7 +30,7 @@ function TokenRow({ token }: { token: TokenKey }) {
     address: cfg.address,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: Boolean(address) && addressesConfigured, refetchInterval: 5_000 },
+    query: { enabled: Boolean(address) && addressesConfigured, refetchInterval: 15_000 },
   });
 
   const { writeContractAsync, isPending } = useWriteContract();

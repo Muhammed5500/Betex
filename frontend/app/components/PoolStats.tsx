@@ -10,13 +10,13 @@ export function PoolStats() {
     abi: SEALED_AMM_ABI,
     address: ADDRESSES.sealedAmm,
     functionName: 'reserveA',
-    query: { enabled: addressesConfigured, refetchInterval: 4_000 },
+    query: { enabled: addressesConfigured, refetchInterval: 15_000 },
   });
   const { data: reserveB } = useReadContract({
     abi: SEALED_AMM_ABI,
     address: ADDRESSES.sealedAmm,
     functionName: 'reserveB',
-    query: { enabled: addressesConfigured, refetchInterval: 4_000 },
+    query: { enabled: addressesConfigured, refetchInterval: 15_000 },
   });
   const { data: tokenA } = useReadContract({
     abi: SEALED_AMM_ABI,
