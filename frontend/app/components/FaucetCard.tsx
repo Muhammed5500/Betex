@@ -6,8 +6,24 @@ import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteCont
 
 import { MINTABLE_ERC20_ABI, TOKENS, type TokenKey, addressesConfigured } from '../lib/contracts';
 
+const TOKEN_STYLE: Record<TokenKey, { dot: string; text: string; bg: string; button: string }> = {
+  MON: {
+    dot: 'bg-monToken',
+    text: 'text-monToken',
+    bg: 'bg-monToken/10 border-monToken/30',
+    button: 'bg-monToken hover:bg-purpleHi',
+  },
+  USDC: {
+    dot: 'bg-usdcToken',
+    text: 'text-usdcToken',
+    bg: 'bg-usdcToken/10 border-usdcToken/30',
+    button: 'bg-usdcToken hover:bg-cyan',
+  },
+};
+
 function TokenRow({ token }: { token: TokenKey }) {
   const cfg = TOKENS[token];
+  const style = TOKEN_STYLE[token];
   const { address } = useAccount();
   const { data: balance, refetch } = useReadContract({
     abi: MINTABLE_ERC20_ABI,
@@ -36,20 +52,25 @@ function TokenRow({ token }: { token: TokenKey }) {
   const busy = isPending || isMining;
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-btx-border last:border-b-0">
-      <div>
-        <div className="font-mono text-white">{cfg.symbol}</div>
-        <div className="text-xs text-btx-muted">
-          {balance !== undefined ? formatUnits(balance, cfg.decimals) : '—'} {cfg.symbol}
+    <div className={`flex items-center justify-between p-4 rounded-lg border ${style.bg}`}>
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${style.bg} border ${style.text}`}>
+          <span className="font-bold text-[11px]">{cfg.symbol.slice(0, 3)}</span>
+        </div>
+        <div>
+          <div className="font-semibold">{cfg.symbol}</div>
+          <div className="text-[11px] text-muted font-mono mt-0.5">
+            {balance !== undefined ? formatUnits(balance, cfg.decimals) : '—'}
+          </div>
         </div>
       </div>
       <button
         type="button"
         onClick={mint}
         disabled={!address || busy}
-        className="px-3 py-2 text-sm rounded-md bg-btx-accent text-btx-bg font-semibold disabled:opacity-40"
+        className={`px-4 h-10 text-sm rounded-md text-white font-semibold disabled:opacity-40 transition-all ${style.button}`}
       >
-        {busy ? 'Minting…' : `+${formatUnits(cfg.faucetAmount, cfg.decimals)} ${cfg.symbol}`}
+        {busy ? 'Minting…' : `+ ${formatUnits(cfg.faucetAmount, cfg.decimals)}`}
       </button>
     </div>
   );
@@ -58,16 +79,22 @@ function TokenRow({ token }: { token: TokenKey }) {
 export function FaucetCard() {
   const { isConnected } = useAccount();
   return (
-    <div className="rounded-xl border border-btx-border bg-btx-panel p-4">
-      <div className="text-sm font-semibold text-white mb-1">Testnet Faucet</div>
-      <p className="text-xs text-btx-muted mb-2">Open-mint mock tokens. No per-address limit; self-service.</p>
+    <div className="rounded-lg border border-border bg-gradient-surface p-5 space-y-3">
+      <div>
+        <div className="text-[15px] font-semibold">Mint test tokens</div>
+        <p className="text-[12px] text-muted mt-1">
+          Open-mint mock ERC-20s. No per-address limit.
+        </p>
+      </div>
       {!isConnected ? (
-        <div className="text-sm text-btx-muted py-6 text-center">Connect wallet to mint.</div>
+        <div className="text-sm text-muted py-8 text-center border border-dashed border-border rounded-lg">
+          Connect wallet to mint.
+        </div>
       ) : (
-        <>
+        <div className="space-y-2.5">
           <TokenRow token="MON" />
           <TokenRow token="USDC" />
-        </>
+        </div>
       )}
     </div>
   );

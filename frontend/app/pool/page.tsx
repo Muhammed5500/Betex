@@ -3,19 +3,18 @@ import { PoolStats } from '../components/PoolStats';
 
 export default function PoolPage() {
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <section className="space-y-4">
-        <h1 className="text-xl font-semibold text-white">Pool</h1>
+    <div className="space-y-8">
+      <header>
+        <h1 className="text-[22px] font-semibold tracking-tight">Pool</h1>
+        <p className="text-sm text-muted mt-1 max-w-xl">
+          SealedAMM holds MON and USDC reserves and settles decrypted orders in a randomized per-epoch
+          sequence. 0.3% fee. No LP tokens in the MVP — liquidity is bootstrapped by the deployer.
+        </p>
+      </header>
+      <div className="grid gap-6 md:grid-cols-2">
         <PoolStats />
-        <div className="text-sm text-btx-muted">
-          The SealedAMM holds reserves of MON and USDC and settles decrypted orders in a random per-epoch
-          order. 0.3% fee. No LP token in the MVP — liquidity is bootstrapped by the deployer.
-        </div>
-      </section>
-      <section className="space-y-4">
-        <h1 className="text-xl font-semibold text-white">Committee</h1>
         <CommitteeStatus />
-      </section>
+      </div>
     </div>
   );
 }

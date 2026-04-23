@@ -1,42 +1,63 @@
 import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
 import Link from 'next/link';
 
-import { WalletButton } from './components/WalletButton';
+import { Navbar } from './components/Navbar';
 import './globals.css';
 import { Providers } from './providers';
 
+const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans', display: 'swap' });
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono', display: 'swap' });
+
 export const metadata: Metadata = {
-  title: 'BTX-Monad — Encrypted DEX',
+  title: 'Betex — Encrypted DEX on Monad',
   description:
     'Paper-faithful BTX threshold encryption on Monad testnet. MEV-resistant swaps with a 2-of-3 decryptor committee.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="font-sans antialiased">
         <Providers>
-          <div className="min-h-screen flex flex-col">
-            <header className="border-b border-btx-border px-6 py-4 flex items-center justify-between bg-btx-panel/60 backdrop-blur">
-              <div className="flex items-center gap-8">
-                <Link href="/" className="flex items-center gap-2 font-semibold text-white">
-                  <span className="inline-block w-2 h-2 rounded-full bg-btx-accent" />
-                  BTX<span className="text-btx-muted">/Monad</span>
-                </Link>
-                <nav className="flex gap-5 text-sm text-btx-muted">
-                  <Link href="/" className="hover:text-white">Swap</Link>
-                  <Link href="/pool" className="hover:text-white">Pool</Link>
-                  <Link href="/epochs" className="hover:text-white">Epochs</Link>
-                  <Link href="/faucet" className="hover:text-white">Faucet</Link>
-                </nav>
+          <div className="relative z-10 min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1 px-6 py-10 max-w-6xl mx-auto w-full">{children}</main>
+            <footer className="px-6 py-6 border-t border-border/60">
+              <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-muted">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />
+                  <span>Live on Monad testnet</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="https://category-labs.github.io/category-research/BTX-paper.pdf"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-text transition-colors"
+                  >
+                    BTX paper
+                  </Link>
+                  <span className="opacity-40">·</span>
+                  <Link
+                    href="https://github.com/Muhammed5500/Betex"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-text transition-colors"
+                  >
+                    GitHub
+                  </Link>
+                  <span className="opacity-40">·</span>
+                  <Link
+                    href="https://testnet.monadexplorer.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-text transition-colors"
+                  >
+                    Explorer
+                  </Link>
+                </div>
               </div>
-              <WalletButton />
-            </header>
-
-            <main className="flex-1 px-6 py-8 max-w-5xl mx-auto w-full">{children}</main>
-
-            <footer className="border-t border-btx-border px-6 py-3 text-xs text-btx-muted text-center">
-              Encrypted client-side · Decrypted by 2-of-3 committee · Paper-faithful BLS12-381 threshold BTX
             </footer>
           </div>
         </Providers>

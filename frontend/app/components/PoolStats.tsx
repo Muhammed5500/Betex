@@ -35,23 +35,68 @@ export function PoolStats() {
         Number(formatUnits(monReserve, TOKENS.MON.decimals))
       : 0;
 
+  function formatNum(v: bigint | undefined, d: number) {
+    if (v === undefined) return '—';
+    return Number(formatUnits(v, d)).toLocaleString('en-US', {
+      maximumFractionDigits: d === 6 ? 2 : 4,
+    });
+  }
+
   return (
-    <div className="rounded-xl border border-btx-border bg-btx-panel p-4">
-      <div className="text-sm font-semibold text-white mb-3">Pool</div>
-      <dl className="text-sm space-y-1.5 font-mono">
-        <div className="flex justify-between">
-          <dt className="text-btx-muted">MON</dt>
-          <dd>{monReserve !== undefined ? formatUnits(monReserve, TOKENS.MON.decimals) : '—'}</dd>
-        </div>
-        <div className="flex justify-between">
-          <dt className="text-btx-muted">USDC</dt>
-          <dd>{usdcReserve !== undefined ? formatUnits(usdcReserve, TOKENS.USDC.decimals) : '—'}</dd>
-        </div>
-        <div className="flex justify-between pt-1 border-t border-btx-border mt-2">
-          <dt className="text-btx-muted">Price</dt>
-          <dd className="text-white">{price ? `${price.toFixed(4)} USDC/MON` : '—'}</dd>
-        </div>
-      </dl>
+    <div className="rounded-lg border border-border bg-gradient-surface p-4 card-lift">
+      <div className="text-[11px] uppercase tracking-widest text-muted mb-3 flex items-center gap-2">
+        <span className="w-1 h-3 rounded-full bg-gradient-cta" />
+        Pool reserves
+      </div>
+      <div className="space-y-3">
+        <ReserveRow
+          symbol="MON"
+          value={formatNum(monReserve, TOKENS.MON.decimals)}
+          color="text-monToken"
+          dot="bg-monToken"
+        />
+        <ReserveRow
+          symbol="USDC"
+          value={formatNum(usdcReserve, TOKENS.USDC.decimals)}
+          color="text-usdcToken"
+          dot="bg-usdcToken"
+        />
+      </div>
+      <div className="mt-4 pt-3 border-t border-border flex items-baseline justify-between">
+        <span className="text-[11px] uppercase tracking-widest text-muted">Price</span>
+        <span className="font-mono text-sm font-medium">
+          {price ? (
+            <>
+              <span className="shimmer-text">{price.toFixed(4)}</span>
+              <span className="text-muted ml-1">USDC/MON</span>
+            </>
+          ) : (
+            '—'
+          )}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ReserveRow({
+  symbol,
+  value,
+  color,
+  dot,
+}: {
+  symbol: string;
+  value: string;
+  color: string;
+  dot: string;
+}) {
+  return (
+    <div className="flex items-baseline justify-between text-[13px]">
+      <div className="flex items-center gap-2">
+        <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+        <span className={`font-mono font-medium ${color}`}>{symbol}</span>
+      </div>
+      <span className="font-mono">{value}</span>
     </div>
   );
 }

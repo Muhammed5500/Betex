@@ -48,30 +48,48 @@ export function CommitteeStatus() {
     return () => clearInterval(id);
   }, []);
 
+  const freshCount = Object.values(state).filter(
+    (s) => s.lastSeenMs && Date.now() - s.lastSeenMs < FRESH_WINDOW_MS,
+  ).length;
+
   return (
-    <div className="rounded-xl border border-btx-border bg-btx-panel p-4">
-      <div className="text-sm font-semibold text-white mb-3">Committee · 2-of-{nodeCount}</div>
-      <ul className="space-y-2 text-sm">
+    <div className="rounded-lg border border-border bg-gradient-surface p-4 card-lift">
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-[11px] uppercase tracking-widest text-muted flex items-center gap-2">
+          <span className="w-1 h-3 rounded-full bg-gradient-to-b from-success to-cyan" />
+          Committee
+        </div>
+        <span className="text-[11px] font-mono text-muted">
+          <span className="text-success">{freshCount}</span>
+          <span className="opacity-60">/{nodeCount} live</span>
+        </span>
+      </div>
+      <ul className="space-y-2.5 text-[13px]">
         {Array.from({ length: nodeCount }).map((_, i) => {
           const s = state[i];
           const fresh = s?.lastSeenMs && Date.now() - s.lastSeenMs < FRESH_WINDOW_MS;
-          const dot = fresh ? 'bg-btx-success' : s?.lastSeenMs ? 'bg-yellow-500' : 'bg-btx-border';
+          const dotClass = fresh
+            ? 'bg-success pulse-dot'
+            : s?.lastSeenMs
+              ? 'bg-warning'
+              : 'bg-border';
           const label = !s?.lastEpoch
-            ? 'no shares yet'
+            ? 'idle'
             : fresh
-              ? `live · epoch #${s.lastEpoch}`
-              : `last: epoch #${s.lastEpoch}`;
+              ? `live · #${s.lastEpoch}`
+              : `last #${s.lastEpoch}`;
+          const labelColor = fresh ? 'text-success' : 'text-muted';
           return (
             <li key={i} className="flex items-center gap-3">
-              <span className={`w-2 h-2 rounded-full ${dot}`} />
-              <span className="font-mono text-white">Node {i}</span>
-              <span className="text-xs text-btx-muted ml-auto">{label}</span>
+              <span className={`w-2 h-2 rounded-full ${dotClass}`} />
+              <span className="font-mono">Node {i}</span>
+              <span className={`text-[11px] ml-auto font-mono ${labelColor}`}>{label}</span>
             </li>
           );
         })}
       </ul>
-      <p className="mt-3 text-xs text-btx-muted">
-        Green = submitted a share in the last 30 s.
+      <p className="mt-3 pt-3 border-t border-border text-[10px] text-muted">
+        Threshold: 2-of-{nodeCount} honest nodes to decrypt
       </p>
     </div>
   );

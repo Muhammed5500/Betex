@@ -129,35 +129,39 @@ export function EpochHistory() {
   }, [client, address]);
 
   if (!addressesConfigured) {
-    return (
-      <div className="text-sm text-btx-muted">Configure contract addresses to load epoch history.</div>
-    );
+    return <div className="text-sm text-muted">Configure contract addresses to load history.</div>;
   }
 
+  const STATUS_STYLE = {
+    settled: 'bg-success/10 text-success border-success/30',
+    empty: 'bg-border/40 text-muted border-border',
+    pending: 'bg-purpleDim/40 text-purpleHi border-purpleDim',
+  } as const;
+
   return (
-    <div className="rounded-xl border border-btx-border bg-btx-panel p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-sm font-semibold text-white">Recent Epochs {address ? '(yours)' : '(all)'}</div>
-        {loading && <span className="text-xs text-btx-muted">refreshing…</span>}
+    <div className="rounded-lg border border-border bg-gradient-surface overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+        <div className="text-[11px] uppercase tracking-widest text-muted flex items-center gap-2">
+          <span className="w-1 h-3 rounded-full bg-gradient-cta" />
+          Recent epochs {address ? '(yours)' : '(all)'}
+        </div>
+        {loading && <span className="text-[11px] text-muted animate-pulse">refreshing</span>}
       </div>
       {entries.length === 0 ? (
-        <p className="text-sm text-btx-muted py-4">No activity yet.</p>
+        <p className="text-sm text-muted px-5 py-12 text-center">No activity yet.</p>
       ) : (
-        <ul className="divide-y divide-btx-border text-sm">
+        <ul className="divide-y divide-border text-[13px]">
           {entries.map((e) => (
-            <li key={e.epochId.toString()} className="flex items-center justify-between py-2.5">
-              <span className="font-mono">#{e.epochId.toString()}</span>
-              <span className="text-btx-muted">
-                {e.orderCount} orders · {e.swaps} swapped · {e.refunds} refunded
+            <li
+              key={e.epochId.toString()}
+              className="flex items-center justify-between px-5 py-3 hover:bg-surface/40 transition-colors"
+            >
+              <span className="font-mono text-mutedHi w-20">#{e.epochId.toString()}</span>
+              <span className="text-muted text-[12px] flex-1 text-center font-mono">
+                {e.orderCount}o · {e.swaps}s · {e.refunds}r
               </span>
               <span
-                className={`text-xs px-2 py-0.5 rounded-full ${
-                  e.status === 'settled'
-                    ? 'bg-btx-success/10 text-btx-success'
-                    : e.status === 'empty'
-                      ? 'bg-btx-border/40 text-btx-muted'
-                      : 'bg-btx-accentDim/30 text-btx-accent'
-                }`}
+                className={`text-[10px] uppercase tracking-widest font-mono px-2 py-0.5 rounded border ${STATUS_STYLE[e.status]}`}
               >
                 {e.status}
               </span>
@@ -165,9 +169,9 @@ export function EpochHistory() {
           ))}
         </ul>
       )}
-      <p className="mt-3 text-[10px] text-btx-muted">
+      <div className="px-5 py-3 text-[10px] text-muted border-t border-border">
         Events from the last {LOOKBACK_BLOCKS.toString()} blocks.
-      </p>
+      </div>
     </div>
   );
 }

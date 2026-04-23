@@ -35,41 +35,38 @@ export function EpochTimer() {
   const totalDuration = Math.max(1, endTime - startTime);
   const timeLeft = Math.max(0, endTime - now);
   const progress = Math.max(0, Math.min(100, ((totalDuration - timeLeft) / totalDuration) * 100));
+  const urgent = timeLeft <= 3 && timeLeft > 0;
 
   if (!addressesConfigured) {
     return (
-      <div className="rounded-xl border border-btx-border bg-btx-panel p-4 text-sm text-btx-muted">
-        Configure <code className="text-btx-accent">.env.local</code> with contract addresses to enable the
-        epoch timer.
+      <div className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-muted">
+        Configure <span className="font-mono text-purple">.env.local</span> to enable the timer.
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-btx-border bg-btx-panel p-4">
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-btx-muted">Epoch</span>
-          <span className="font-mono text-white">#{epochId?.toString() ?? '—'}</span>
-          <span className="text-btx-muted">·</span>
-          <span className="text-btx-muted">{orderCount} orders</span>
+    <div className="rounded-lg border border-border bg-gradient-surface overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 text-[13px]">
+        <div className="flex items-center gap-2.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-magenta pulse-dot" />
+          <span className="text-muted uppercase tracking-wider text-[11px]">Epoch</span>
+          <span className="font-mono font-medium">#{epochId?.toString() ?? '—'}</span>
+          <span className="opacity-20">·</span>
+          <span className="text-muted">{orderCount} {orderCount === 1 ? 'order' : 'orders'}</span>
           {closed && (
-            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-btx-accentDim/40 text-btx-accent">
+            <span className="px-1.5 py-0.5 text-[10px] rounded border border-success/40 text-success uppercase tracking-wide bg-success/10">
               closed
             </span>
           )}
         </div>
-        <div className="font-mono">
-          {timeLeft > 0 ? (
-            <span className="text-white">{timeLeft}s</span>
-          ) : (
-            <span className="text-btx-danger">settling…</span>
-          )}
-        </div>
+        <span className={`font-mono font-semibold ${urgent ? 'text-magenta' : ''}`}>
+          {timeLeft > 0 ? `${timeLeft}s` : <span className="text-muted">settling…</span>}
+        </span>
       </div>
-      <div className="mt-3 h-1 rounded-full bg-btx-border overflow-hidden">
+      <div className="h-[3px] bg-border/60 overflow-hidden">
         <div
-          className="h-full bg-btx-accent transition-[width] duration-300"
+          className="h-full bg-gradient-cta transition-[width] duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>

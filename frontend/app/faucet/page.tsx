@@ -2,12 +2,13 @@ import { FaucetCard } from '../components/FaucetCard';
 
 export default function FaucetPage() {
   return (
-    <div className="space-y-4 max-w-xl">
-      <h1 className="text-xl font-semibold text-white">Testnet Faucet</h1>
-      <p className="text-sm text-btx-muted">
-        Mock MON (18 decimals) and mock USDC (6 decimals) are open-mint ERC-20s. Grab some tokens before
-        trying an encrypted swap.
-      </p>
+    <div className="space-y-6 max-w-md">
+      <header>
+        <h1 className="text-[22px] font-semibold tracking-tight">Faucet</h1>
+        <p className="text-sm text-muted mt-1">
+          Mock MON (18 dec) and USDC (6 dec). Open-mint — grab as much as you need.
+        </p>
+      </header>
       <FaucetCard />
     </div>
   );

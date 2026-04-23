@@ -16,8 +16,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const wagmiConfig = useMemo(
     () =>
       getDefaultConfig({
-        appName: 'BTX-Monad',
-        projectId: WALLETCONNECT_PROJECT_ID || 'btx-monad-local',
+        appName: 'Betex',
+        projectId: WALLETCONNECT_PROJECT_ID || 'betex-local',
         chains: [chain],
         ssr: true,
       }),
@@ -31,9 +31,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           theme={darkTheme({
-            accentColor: '#6d8dff',
-            accentColorForeground: '#0b0d12',
+            accentColor: '#836ef9',
+            accentColorForeground: '#ffffff',
             borderRadius: 'medium',
+            fontStack: 'system',
+            overlayBlur: 'small',
           })}
           modalSize="compact"
         >
