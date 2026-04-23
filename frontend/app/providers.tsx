@@ -1,13 +1,13 @@
 'use client';
 
-import { RainbowKitProvider, darkTheme, getDefaultWallets, connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { injected, metaMask } from 'wagmi/connectors';
 
-import { activeChain } from './lib/chains';
+import { activeChain, hardhatLocal, monadTestnet } from './lib/chains';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const chain = activeChain();
@@ -15,9 +15,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const wagmiConfig = useMemo(
     () =>
       createConfig({
-        chains: [chain],
+        chains: [chain === hardhatLocal ? hardhatLocal : monadTestnet],
         transports: {
-          [chain.id]: http(),
+          [monadTestnet.id]: http(),
+          [hardhatLocal.id]: http(),
         },
         connectors: [injected(), metaMask()],
         ssr: true,
