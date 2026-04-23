@@ -25,16 +25,17 @@ A four-layer prototype of the BTX primitive wired end-to-end:
 |---|---|
 | MockMON | [`0x7CD1cf590d76473D45C1c5FaC2eD507E6EE5Fe9d`](https://testnet.monadexplorer.com/address/0x7CD1cf590d76473D45C1c5FaC2eD507E6EE5Fe9d) |
 | MockUSDC | [`0xE7dA90950524e29475FD25365443ae971C2005CD`](https://testnet.monadexplorer.com/address/0xE7dA90950524e29475FD25365443ae971C2005CD) |
-| SealedAMM | [`0xE60203c33500b391477957C33261a1A226C508B5`](https://testnet.monadexplorer.com/address/0xE60203c33500b391477957C33261a1A226C508B5) |
+| SealedAMM | [`0x019D5FFd40fD8e286f9992D0D1D17a34Ef6b8a24`](https://testnet.monadexplorer.com/address/0x019D5FFd40fD8e286f9992D0D1D17a34Ef6b8a24) |
 | SchnorrVerifier | [`0xD93A0fd7Ea4521e7179B1265880077d22fb55C4c`](https://testnet.monadexplorer.com/address/0xD93A0fd7Ea4521e7179B1265880077d22fb55C4c) |
 | BTXVerifier | [`0x3850d3b5DF4Dc5F05fbA420c3890435575ad7240`](https://testnet.monadexplorer.com/address/0x3850d3b5DF4Dc5F05fbA420c3890435575ad7240) |
-| EncryptedPool | [`0x24E6f6e80f090c0E211aE070bDc75B20bEEb484D`](https://testnet.monadexplorer.com/address/0x24E6f6e80f090c0E211aE070bDc75B20bEEb484D) |
+| EncryptedPool | [`0x3c3614aB48ad90419Cb3eD94808fE24Bb4055152`](https://testnet.monadexplorer.com/address/0x3c3614aB48ad90419Cb3eD94808fE24Bb4055152) |
 
-Config: `Bmax=16`, `N=3`, `t=1`, `epochDuration=10s`, `refundTimeout=60s`.
+Config: `Bmax=16`, `N=3`, `t=1`, `epochDuration=5s`, `refundTimeout=60s`.
 Initial liquidity: 10 000 MON + 40 000 USDC.
 
 End-to-end verified: real USDC → MON swaps settled through the committee
-on the live stack. 75 USDC → 18.66 MON on the first run.
+on the live stack. Committee picks up every batch within the 5-second
+window; user-perceived latency ≈ 5-7 seconds for a full encrypted swap.
 
 ## Deviations from the paper
 
