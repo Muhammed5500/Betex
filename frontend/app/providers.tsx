@@ -1,24 +1,25 @@
 'use client';
 
-import { getDefaultConfig, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, darkTheme, getDefaultWallets, connectorsForWallets } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { WagmiProvider } from 'wagmi';
+import { WagmiProvider, createConfig, http } from 'wagmi';
+import { injected, metaMask } from 'wagmi/connectors';
 
 import { activeChain } from './lib/chains';
-
-const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? '';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const chain = activeChain();
 
   const wagmiConfig = useMemo(
     () =>
-      getDefaultConfig({
-        appName: 'Betex',
-        projectId: WALLETCONNECT_PROJECT_ID || 'betex-local',
+      createConfig({
         chains: [chain],
+        transports: {
+          [chain.id]: http(),
+        },
+        connectors: [injected(), metaMask()],
         ssr: true,
       }),
     [chain],
@@ -38,6 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             overlayBlur: 'small',
           })}
           modalSize="compact"
+          initialChain={chain}
         >
           {children}
         </RainbowKitProvider>
