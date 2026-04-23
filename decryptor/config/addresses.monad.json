@@ -1,0 +1,22 @@
+{
+  "network": "monadTestnet",
+  "chainId": 10143,
+  "rpcUrl": "https://testnet-rpc.monad.xyz",
+  "deployer": "0xF30FF34Cc5DFaC8362546caBF385BCCe9f24Ac36",
+  "nodes": [
+    "0xBF4F9DE11D3bd3f74F29b9fa2107Dfd8aC57fBcA",
+    "0xBe8721E70230d606Ff8E48A60d43fD5CD312B490",
+    "0x3d75389438718Ab9902CE40727825a99bECf4E4E"
+  ],
+  "contracts": {
+    "MockMON": "0x7CD1cf590d76473D45C1c5FaC2eD507E6EE5Fe9d",
+    "MockUSDC": "0xE7dA90950524e29475FD25365443ae971C2005CD",
+    "SealedAMM": "0xE60203c33500b391477957C33261a1A226C508B5",
+    "SchnorrVerifier": "0xD93A0fd7Ea4521e7179B1265880077d22fb55C4c",
+    "BTXVerifier": "0x3850d3b5DF4Dc5F05fbA420c3890435575ad7240",
+    "EncryptedPool": "0x24E6f6e80f090c0E211aE070bDc75B20bEEb484D"
+  },
+  "epochDuration": 10,
+  "refundTimeout": 60,
+  "generatedAt": "2026-04-23T09:11:29.005Z"
+}
