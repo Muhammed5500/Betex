@@ -16,7 +16,7 @@
 
 Betex is a decentralized exchange where **every order is encrypted in the user's browser** and revealed **only after a 2-of-3 committee votes together**, in a window too short for any MEV bot to exploit. Execution order inside each batch is then shuffled by on-chain randomness. The result: sandwich attacks are **mathematically impossible** — not just "hard".
 
-Under the hood is a paper-faithful implementation of [**BTX: Simple and Efficient Batch Threshold Encryption**](https://category-labs.github.io/category-research/BTX-paper.pdf) (Agarwal, Das, Gilkalaye, Rindal, Shoup — Category Labs, 2024), running on Monad's BLS12-381 precompiles (EIP-2537, MONAD_FOUR hard fork). Paper §4–§7 in Solidity + Node.js; paper §8 (encrypted mempool) wrapped as a working DEX.
+Under the hood is a paper-faithful implementation of [**BTX: Simple and Efficient Batch Threshold Encryption**](https://category-labs.github.io/category-research/BTX-paper.pdf) (Agarwal, Das, Gilkalaye, Rindal, Shoup — Category Labs, 17 Apr 2026), running on Monad's BLS12-381 precompiles (EIP-2537, MONAD_FOUR hard fork). Paper §4–§7 in Solidity + Node.js; paper §8 (encrypted mempool) wrapped as a working DEX.
 
 > **Built for Monad Kayseri 2026 hackathon.**
 
@@ -43,7 +43,7 @@ What if orders were encrypted on submission and only revealed together, in batch
 
 That's an **encrypted mempool**. Existing designs (Ferveo, Shutter, Radius) use threshold encryption schemes that require *O(N)* communication per order per server, where *N* is the committee size. At scale, this gets expensive.
 
-**BTX (Agarwal et al., 2024)** solves this: a new threshold encryption scheme where each server broadcasts a **single group element** σⱼ regardless of the batch size. The combiner aggregates these to decrypt *N* messages at once. Communication per server is **O(1) in batch size** — the scheme's defining property.
+**BTX (Agarwal et al., 2026)** solves this: a new threshold encryption scheme where each server broadcasts a **single group element** σⱼ regardless of the batch size. The combiner aggregates these to decrypt *N* messages at once. Communication per server is **O(1) in batch size** — the scheme's defining property.
 
 Betex is the first working DEX built on BTX. Paper-faithful. Live on Monad testnet.
 
@@ -464,7 +464,7 @@ All well within Monad's 30M block gas limit. The constructor is the single most 
 
 ## References
 
-- **BTX paper** — Amit Agarwal, Sourav Das, Babak Poorebrahim Gilkalaye, Peter Rindal, Victor Shoup. *BTX: Simple and Efficient Batch Threshold Encryption*. Category Labs, 2024. [PDF](https://category-labs.github.io/category-research/BTX-paper.pdf)
+- **BTX paper** — Amit Agarwal, Sourav Das, Babak Poorebrahim Gilkalaye, Peter Rindal, Victor Shoup. *BTX: Simple and Efficient Batch Threshold Encryption*. Category Labs, 17 Apr 2026. [PDF](https://category-labs.github.io/category-research/BTX-paper.pdf)
 - **AGM-Schnorr** — Fuchsbauer, Kiltz, Loss. *The Algebraic Group Model and its Applications*. CRYPTO 2018.
 - **BLS12-381** — Barreto, Lynn, Scott. *Constructing Elliptic Curves with Prescribed Embedding Degrees*. 2002. Curve discovered in [this bls12-381 writeup](https://hackmd.io/@benjaminion/bls12-381).
 - **EIP-2537** — *Precompile for BLS12-381 curve operations*. Live in Monad (MONAD_FOUR, 2025-10-14).

@@ -342,7 +342,7 @@ function References() {
       tag: '[1]',
       author: 'Agarwal, Das, Gilkalaye, Rindal, Shoup',
       title: 'BTX: Simple and Efficient Batch Threshold Encryption',
-      pub: 'Category Labs, 2024',
+      pub: 'Category Labs, 17 Apr 2026',
       href: 'https://category-labs.github.io/category-research/BTX-paper.pdf',
     },
     {
