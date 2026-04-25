@@ -88,23 +88,39 @@ const submittedShare = new Set(); // epochs where we already submitted σ
 const combinedEpochs = new Set();
 const settledEpochs = new Set(); // epochs confirmed executed on-chain — never re-read
 const pendingEpochs = new Set(); // epochs known to contain ≥1 OrderSubmitted event
+const emptyEpochs = new Set();   // epochs closed with orderCount=0, skip forever
 let lastEventBlock = 0;          // cursor for queryFilter(OrderSubmitted)
 let busy = false;
 
 async function tryCloseEpoch() {
-  // Only node 0 owns auto-close to avoid 3-way nonce races + duplicate reverts.
-  if (NODE_ID !== 0) return;
+  // Any node may call closeEpoch(). To avoid 3 nodes racing on every tick,
+  // non-zero nodes wait a small backoff — node 0 normally wins, but if it's
+  // offline, nodes 1 and 2 step in and liveness is preserved.
+  //
+  // Empty epochs are intentionally skipped: EncryptedPool._rolloverIfExpired()
+  // closes any expired epoch automatically inside the next submitEncryptedOrder
+  // call, so paying gas to close a 0-order epoch is wasted work. Decryptors
+  // only step in when there is real batch work waiting to be revealed.
   try {
     const curId = Number(await rpcRetry(() => ctx.encryptedPool.currentEpochId()));
     const epoch = await rpcRetry(() => ctx.encryptedPool.epochs(curId));
     const now = Math.floor(Date.now() / 1000);
-    if (!epoch.closed && now >= Number(epoch.endTime)) {
-      console.log(`[node${NODE_ID}] closing expired epoch ${curId}`);
-      const tx = await rpcRetry(() => ctx.encryptedPool.closeEpoch());
-      await tx.wait();
+    if (epoch.closed || now < Number(epoch.endTime)) return;
+    if (Number(epoch.orderCount) === 0) return;
+
+    if (NODE_ID > 0) {
+      await new Promise((r) => setTimeout(r, NODE_ID * 400));
+      const fresh = await rpcRetry(() => ctx.encryptedPool.epochs(curId));
+      if (fresh.closed) return;
     }
+
+    console.log(`[node${NODE_ID}] closing expired epoch ${curId}`);
+    const tx = await rpcRetry(() => ctx.encryptedPool.closeEpoch());
+    await tx.wait();
   } catch (err) {
-    console.warn(`[node${NODE_ID}] closeEpoch poll error: ${err.shortMessage ?? err.message}`);
+    const msg = err.shortMessage ?? err.reason ?? err.message ?? '';
+    if (/already closed|not expired|epoch.*closed/i.test(msg)) return;
+    console.warn(`[node${NODE_ID}] closeEpoch poll error: ${msg}`);
   }
 }
 
