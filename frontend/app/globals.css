@@ -3,47 +3,39 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 html,
 body {
-  background: #08060f;
-  color: #f1eefa;
+  background: #fbf8ee;
+  color: #1a1a1a;
   min-height: 100vh;
 }
 
 body {
   font-feature-settings: 'cv11', 'ss01';
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
   letter-spacing: -0.005em;
 }
 
-/* Ambient gradient mesh behind the page. */
+/* Page-wide dot grid — graph-paper feel. */
 body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 70% 45% at 20% -5%, rgba(131, 110, 249, 0.28), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 95% 10%, rgba(240, 107, 196, 0.18), transparent 55%),
-    radial-gradient(ellipse 50% 35% at 50% 100%, rgba(78, 217, 255, 0.12), transparent 55%);
-  z-index: 0;
-}
-
-/* Subtle grid overlay for texture. */
-body::after {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(to right, rgba(131, 110, 249, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(131, 110, 249, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
+    radial-gradient(circle at 1px 1px, rgba(26, 26, 26, 0.08) 1px, transparent 0);
+  background-size: 24px 24px;
+  /* very faint — emphasises edges of page, fades center less */
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.7) 100%);
 }
 
 a { color: inherit; }
@@ -57,51 +49,88 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-/* Live pulse */
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 216, 155, 0.5); }
-  50%      { opacity: 0.7; transform: scale(1.1); box-shadow: 0 0 0 6px rgba(0, 216, 155, 0); }
-}
-.pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
-
-/* Shimmer on gradient text */
-@keyframes shimmer-text {
-  0%, 100% { background-position: 0% 50%; }
-  50%      { background-position: 100% 50%; }
-}
-.shimmer-text {
-  background: linear-gradient(90deg, #836ef9 0%, #f06bc4 30%, #4ed9ff 60%, #836ef9 100%);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shimmer-text 8s ease-in-out infinite;
-}
-
-/* CTA button glow hover */
-.cta-glow {
-  position: relative;
-  transition: all 0.2s ease;
-}
-.cta-glow::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
+.focus-ring:focus-visible {
+  outline: 2px solid #6d5be0;
+  outline-offset: 2px;
   border-radius: inherit;
-  background: linear-gradient(135deg, #836ef9, #f06bc4);
-  opacity: 0;
-  filter: blur(12px);
-  transition: opacity 0.2s ease;
-  z-index: -1;
 }
-.cta-glow:hover:not(:disabled)::before { opacity: 0.6; }
-.cta-glow:hover:not(:disabled) { transform: translateY(-1px); }
 
-/* Card hover lift */
-.card-lift {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+/* Live pulse — used on committee status dots. */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(1.1); }
 }
-.card-lift:hover {
-  border-color: rgba(131, 110, 249, 0.4);
-  box-shadow: 0 0 40px rgba(131, 110, 249, 0.08);
+.pulse-dot { animation: pulse-dot 1.8s ease-in-out infinite; }
+.live-dot  { animation: pulse-dot 1.8s ease-in-out infinite; }
+
+/* ---------- Lab notebook helpers ---------- */
+
+/* Highlighter — soft yellow background like a real marker. */
+.highlight {
+  background: linear-gradient(120deg, #fff3a3 0%, #fff3a3 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 60%;
+  background-position: 0 88%;
+  padding: 0 0.08em;
+}
+
+/* Hand-drawn underline (SVG-bg, slightly wavy). */
+.scribble-under {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 6' preserveAspectRatio='none'%3E%3Cpath d='M2 4 Q 18 1.5 35 3.5 T 70 3.2 T 105 3.6 T 118 3' fill='none' stroke='%233b3a8a' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 6px;
+  background-position: 0 100%;
+  padding-bottom: 4px;
+}
+
+/* Marginalia — handwritten side notes. */
+.marginalia {
+  font-family: var(--font-caveat), 'Bradley Hand', 'Segoe Script', cursive;
+  font-size: 1.2rem;
+  line-height: 1.25;
+  color: #3b3a8a;
+}
+.marginalia .marker {
+  color: #c1272d;
+}
+
+/* Section number prefix — Tufte-style. */
+.section-num {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: #9a8f72;
+  text-transform: uppercase;
+}
+
+/* Drop cap for the first paragraph of a section. */
+.drop-cap::first-letter {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, ui-serif, serif;
+  font-weight: 500;
+  font-size: 3.4em;
+  line-height: 0.86;
+  float: left;
+  padding: 0.04em 0.12em 0 0;
+  color: #1a1a1a;
+}
+
+/* Display formula box. */
+.formula {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.95rem;
+  background: #f5f1e2;
+  border: 1px solid #d9d3bf;
+  border-radius: 4px;
+  padding: 12px 16px;
+  color: #1a1a1a;
+  letter-spacing: 0;
+}
+
+/* Citation superscript style — used inline in body. */
+.cite {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.7em;
+  vertical-align: super;
+  color: #6d5be0;
+  margin-left: 0.1em;
 }

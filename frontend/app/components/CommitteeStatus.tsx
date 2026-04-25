@@ -33,7 +33,9 @@ export function CommitteeStatus() {
       setState((prev) => {
         const next = { ...prev };
         for (const log of logs) {
-          const { epochId, nodeId } = (log as unknown as { args: { epochId: bigint; nodeId: number } }).args;
+          const { epochId, nodeId } = (log as unknown as {
+            args: { epochId: bigint; nodeId: number };
+          }).args;
           const id = Number(nodeId);
           next[id] = { lastEpoch: Number(epochId), lastSeenMs: now };
         }
@@ -53,23 +55,20 @@ export function CommitteeStatus() {
   ).length;
 
   return (
-    <div className="rounded-lg border border-border bg-gradient-surface p-4 card-lift">
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-[11px] uppercase tracking-widest text-muted flex items-center gap-2">
-          <span className="w-1 h-3 rounded-full bg-gradient-to-b from-success to-cyan" />
-          Committee
-        </div>
-        <span className="text-[11px] font-mono text-muted">
-          <span className="text-success">{freshCount}</span>
-          <span className="opacity-60">/{nodeCount} live</span>
+    <div className="rounded-xl border border-border bg-surface shadow-soft hover:shadow-soft-lg transition-shadow duration-500 ease-paper p-5">
+      <div className="flex items-center justify-between text-xs text-muted mb-4">
+        <span>Committee</span>
+        <span className="font-mono">
+          <span className="text-text">{freshCount}</span>
+          <span className="text-dim">/{nodeCount} live</span>
         </span>
       </div>
-      <ul className="space-y-2.5 text-[13px]">
+      <ul className="space-y-2.5 text-sm">
         {Array.from({ length: nodeCount }).map((_, i) => {
           const s = state[i];
           const fresh = s?.lastSeenMs && Date.now() - s.lastSeenMs < FRESH_WINDOW_MS;
           const dotClass = fresh
-            ? 'bg-success pulse-dot'
+            ? 'bg-success live-dot'
             : s?.lastSeenMs
               ? 'bg-warning'
               : 'bg-border';
@@ -78,18 +77,18 @@ export function CommitteeStatus() {
             : fresh
               ? `live · #${s.lastEpoch}`
               : `last #${s.lastEpoch}`;
-          const labelColor = fresh ? 'text-success' : 'text-muted';
           return (
             <li key={i} className="flex items-center gap-3">
-              <span className={`w-2 h-2 rounded-full ${dotClass}`} />
-              <span className="font-mono">Node {i}</span>
-              <span className={`text-[11px] ml-auto font-mono ${labelColor}`}>{label}</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
+              <span className="font-mono text-text">Node {i}</span>
+              {i === 0 && <span className="text-xs text-muted">· combiner</span>}
+              <span className="text-xs ml-auto font-mono text-muted">{label}</span>
             </li>
           );
         })}
       </ul>
-      <p className="mt-3 pt-3 border-t border-border text-[10px] text-muted">
-        Threshold: 2-of-{nodeCount} honest nodes to decrypt
+      <p className="mt-4 pt-4 border-t border-border text-xs text-muted">
+        Threshold: 2 of {nodeCount}.
       </p>
     </div>
   );

@@ -22,17 +22,9 @@ import {
   otherToken,
 } from '../lib/contracts';
 import { getEK } from '../lib/public-params';
+import { SwapTimeline } from './SwapTimeline';
 
 type Step = 'idle' | 'approving' | 'encrypting' | 'submitting' | 'confirming' | 'done' | 'error';
-
-const TOKEN_COLOR: Record<TokenKey, string> = {
-  MON: 'text-monToken',
-  USDC: 'text-usdcToken',
-};
-const TOKEN_BG: Record<TokenKey, string> = {
-  MON: 'bg-monToken/15 border-monToken/30',
-  USDC: 'bg-usdcToken/15 border-usdcToken/30',
-};
 
 function randomNonce(): bigint {
   const bytes = new Uint8Array(32);
@@ -95,7 +87,6 @@ export function SwapCard() {
 
   useEffect(() => {
     if (step === 'confirming' && txConfirmed && txHash) {
-      // Immediate unlock: banner carries the success, button resets instantly.
       setLastSuccessTx(txHash);
       setStep('idle');
       setAmountStr('');
@@ -106,7 +97,6 @@ export function SwapCard() {
     }
   }, [step, txConfirmed, txHash]);
 
-  // Dismiss success banner + clear error as soon as user starts typing again.
   useEffect(() => {
     if (amountStr !== '') {
       if (lastSuccessTx) setLastSuccessTx(undefined);
@@ -191,28 +181,21 @@ export function SwapCard() {
     : step === 'approving'
       ? `Approving ${cfgIn.symbol}…`
       : step === 'encrypting'
-        ? 'Encrypting locally…'
+        ? 'Encrypting…'
         : step === 'submitting'
-          ? 'Submitting encrypted order…'
+          ? 'Submitting…'
           : step === 'confirming'
             ? 'Waiting for confirmation…'
-            : 'Swap encrypted';
+            : 'Swap';
 
   return (
-    <div className="rounded-lg border border-border bg-gradient-surface backdrop-blur-sm card-lift">
-      <div className="flex items-center justify-between px-5 pt-5 pb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-md bg-gradient-cta flex items-center justify-center shadow-glow-purple">
-            <LockIcon />
-          </div>
-          <h2 className="text-[15px] font-semibold">Encrypted Swap</h2>
-        </div>
-        <span className="text-[10px] px-2.5 py-1 rounded-full bg-purpleDim/40 border border-purpleDim text-purpleHi font-mono uppercase tracking-wider">
-          2-of-3 · BTX
-        </span>
+    <div className="rounded-xl border border-border bg-surface shadow-soft hover:shadow-soft-lg transition-shadow duration-500 ease-paper">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <h2 className="text-sm font-medium text-text">Encrypted Swap</h2>
+        <span className="text-eyebrow uppercase text-muted font-mono">2-of-3 · BTX</span>
       </div>
 
-      <div className="px-5 pb-5 space-y-1">
+      <div className="px-5 py-5 space-y-1">
         <FormRow
           label="Pay"
           token={tokenIn}
@@ -222,11 +205,11 @@ export function SwapCard() {
           editable
         />
 
-        <div className="flex justify-center -my-2.5 relative z-10">
+        <div className="flex justify-center -my-2 relative z-10">
           <button
             type="button"
             onClick={() => setTokenIn(tokenOut)}
-            className="w-9 h-9 rounded-full border border-border bg-bg text-muted hover:text-text hover:border-purple hover:shadow-glow-purple flex items-center justify-center transition-all"
+            className="focus-ring w-9 h-9 rounded-full border border-border bg-surface shadow-soft text-muted hover:text-text hover:border-borderHi flex items-center justify-center transition-all duration-300 ease-paper hover:scale-105"
             aria-label="flip tokens"
           >
             <SwapIcon />
@@ -234,7 +217,7 @@ export function SwapCard() {
         </div>
 
         <FormRow
-          label="Receive (estimated)"
+          label="Receive"
           token={tokenOut}
           amountStr={
             amountOut !== undefined ? formatUnits(amountOut as bigint, cfgOut.decimals) : ''
@@ -243,61 +226,59 @@ export function SwapCard() {
         />
       </div>
 
-      <div className="px-5 pb-5">
+      <div className="px-5 pb-5 space-y-3">
+        {step !== 'idle' && step !== 'error' && <SwapTimeline step={step} />}
+
         <button
           type="button"
           onClick={handleSwap}
           disabled={disabled}
-          className="cta-glow w-full h-13 py-3.5 rounded-lg bg-gradient-cta hover:bg-gradient-cta-hover text-white font-semibold text-[15px] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          className="focus-ring w-full h-12 rounded-lg bg-text hover:bg-textHi text-bg font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 ease-paper shadow-soft hover:shadow-soft-lg active:translate-y-px"
         >
           {cta}
         </button>
 
         {lastSuccessTx && (
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-success/30 bg-success/10 px-3 py-2.5 text-[12px]">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot flex-shrink-0" />
-              <span className="truncate">
-                Order submitted — settling after this epoch closes
-              </span>
-            </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surfaceWarm px-3 py-2.5 text-xs text-mutedHi">
+            <span className="flex items-center gap-2 min-w-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-success live-dot shrink-0" />
+              <span className="truncate">Order submitted. Settling after epoch close.</span>
+            </span>
             <a
               href={`https://testnet.monadexplorer.com/tx/${lastSuccessTx}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-shrink-0 font-mono text-success hover:underline"
+              className="shrink-0 font-mono text-text hover:text-purple transition-colors"
             >
-              {lastSuccessTx.slice(0, 8)}↗
+              {lastSuccessTx.slice(0, 8)} →
             </a>
           </div>
         )}
 
         {message && (
-          <p className={`mt-3 text-xs ${step === 'error' ? 'text-danger' : 'text-mutedHi'}`}>
+          <p className={`text-xs ${step === 'error' ? 'text-danger' : 'text-muted'}`}>
             {message}
           </p>
         )}
 
         {txHash && step === 'confirming' && (
-          <p className="mt-3 text-xs font-mono text-muted">
+          <p className="text-xs font-mono text-muted">
             pending:{' '}
             <a
               href={`https://testnet.monadexplorer.com/tx/${txHash}`}
               target="_blank"
               rel="noreferrer"
-              className="text-purple hover:text-purpleHi transition-colors"
+              className="text-text hover:text-purple transition-colors"
             >
-              {txHash.slice(0, 10)}…{txHash.slice(-8)} ↗
+              {txHash.slice(0, 10)}…{txHash.slice(-8)} →
             </a>
           </p>
         )}
       </div>
 
-      <div className="border-t border-border px-5 py-3 flex items-center gap-2 text-[11px] text-mutedHi leading-relaxed">
-        <ShieldIcon />
-        <span>
-          Encrypted in your browser · BTX + AES-256-GCM · Schnorr NIZK binding · committee-revealed after epoch close
-        </span>
+      <div className="border-t border-border px-5 py-3 text-xs text-muted leading-relaxed">
+        Encrypted with BTX + AES-256-GCM. Schnorr NIZK binds the ciphertext to
+        your wallet. Revealed only after the committee combines shares.
       </div>
     </div>
   );
@@ -320,13 +301,11 @@ function FormRow({
 }) {
   const cfg = TOKENS[token];
   return (
-    <div className="rounded-lg border border-border bg-bg/60 p-4 hover:border-borderHi transition-colors">
-      <div className="flex items-center justify-between text-[11px] text-muted mb-2.5">
-        <span className="uppercase tracking-wider">{label}</span>
+    <div className="rounded-lg border border-border bg-surfaceWarm p-4 transition-colors duration-300 ease-paper hover:border-borderHi">
+      <div className="flex items-center justify-between text-xs text-muted mb-2">
+        <span>{label}</span>
         {balance !== undefined && (
-          <span className="font-mono">
-            bal: {formatUnits(balance, cfg.decimals)}
-          </span>
+          <span className="font-mono">Balance {formatUnits(balance, cfg.decimals)}</span>
         )}
       </div>
       <div className="flex items-center gap-3">
@@ -336,64 +315,24 @@ function FormRow({
           disabled={!editable}
           onChange={(e) => onChangeAmount?.(e.target.value)}
           placeholder="0.0"
-          className="flex-1 bg-transparent outline-none text-[30px] font-mono tracking-tight disabled:text-muted"
+          className="flex-1 bg-transparent outline-none text-2xl font-mono tracking-tight disabled:text-muted"
         />
-        <div
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-md border font-semibold text-sm ${TOKEN_BG[token]} ${TOKEN_COLOR[token]}`}
-        >
-          <TokenDot token={token} />
-          {cfg.symbol}
-        </div>
+        <div className="text-sm font-medium text-text">{cfg.symbol}</div>
       </div>
     </div>
   );
 }
 
-function TokenDot({ token }: { token: TokenKey }) {
-  const color = token === 'MON' ? 'bg-monToken' : 'bg-usdcToken';
-  return <span className={`w-1.5 h-1.5 rounded-full ${color}`} />;
-}
-
 function SwapIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
       <path
         d="M7 3v14m0 0l-4-4m4 4l4-4M17 21V7m0 0l-4 4m4-4l4 4"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="5" y="11" width="14" height="10" rx="2" stroke="white" strokeWidth="2" />
-      <path d="M8 11V7a4 4 0 018 0v4" stroke="white" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="flex-shrink-0 text-purple"
-    >
-      <path
-        d="M12 2l8 3v6c0 5-3.5 9.5-8 11-4.5-1.5-8-6-8-11V5l8-3z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

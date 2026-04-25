@@ -43,32 +43,18 @@ export function PoolStats() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-gradient-surface p-4 card-lift">
-      <div className="text-[11px] uppercase tracking-widest text-muted mb-3 flex items-center gap-2">
-        <span className="w-1 h-3 rounded-full bg-gradient-cta" />
-        Pool reserves
+    <div className="rounded-xl border border-border bg-surface shadow-soft hover:shadow-soft-lg transition-shadow duration-500 ease-paper p-5">
+      <div className="text-xs text-muted mb-4">Pool reserves</div>
+      <div className="space-y-2.5 text-sm">
+        <Row symbol="MON" value={formatNum(monReserve, TOKENS.MON.decimals)} />
+        <Row symbol="USDC" value={formatNum(usdcReserve, TOKENS.USDC.decimals)} />
       </div>
-      <div className="space-y-3">
-        <ReserveRow
-          symbol="MON"
-          value={formatNum(monReserve, TOKENS.MON.decimals)}
-          color="text-monToken"
-          dot="bg-monToken"
-        />
-        <ReserveRow
-          symbol="USDC"
-          value={formatNum(usdcReserve, TOKENS.USDC.decimals)}
-          color="text-usdcToken"
-          dot="bg-usdcToken"
-        />
-      </div>
-      <div className="mt-4 pt-3 border-t border-border flex items-baseline justify-between">
-        <span className="text-[11px] uppercase tracking-widest text-muted">Price</span>
-        <span className="font-mono text-sm font-medium">
+      <div className="mt-4 pt-4 border-t border-border flex items-baseline justify-between text-sm">
+        <span className="text-muted text-xs">Price</span>
+        <span className="font-mono text-text">
           {price ? (
             <>
-              <span className="shimmer-text">{price.toFixed(4)}</span>
-              <span className="text-muted ml-1">USDC/MON</span>
+              {price.toFixed(4)} <span className="text-muted">USDC/MON</span>
             </>
           ) : (
             '—'
@@ -79,24 +65,11 @@ export function PoolStats() {
   );
 }
 
-function ReserveRow({
-  symbol,
-  value,
-  color,
-  dot,
-}: {
-  symbol: string;
-  value: string;
-  color: string;
-  dot: string;
-}) {
+function Row({ symbol, value }: { symbol: string; value: string }) {
   return (
-    <div className="flex items-baseline justify-between text-[13px]">
-      <div className="flex items-center gap-2">
-        <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
-        <span className={`font-mono font-medium ${color}`}>{symbol}</span>
-      </div>
-      <span className="font-mono">{value}</span>
+    <div className="flex items-baseline justify-between">
+      <span className="font-mono text-text">{symbol}</span>
+      <span className="font-mono text-muted">{value}</span>
     </div>
   );
 }

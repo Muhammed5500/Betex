@@ -15,6 +15,18 @@ interface EpochEntry {
 
 const LOOKBACK_BLOCKS = 50_000n;
 
+const STATUS_LABEL: Record<EpochEntry['status'], string> = {
+  settled: 'Settled',
+  empty: 'Empty',
+  pending: 'Pending',
+};
+
+const STATUS_STYLE: Record<EpochEntry['status'], string> = {
+  settled: 'text-success',
+  empty: 'text-dim',
+  pending: 'text-purple',
+};
+
 export function EpochHistory() {
   const client = usePublicClient();
   const { address } = useAccount();
@@ -132,45 +144,36 @@ export function EpochHistory() {
     return <div className="text-sm text-muted">Configure contract addresses to load history.</div>;
   }
 
-  const STATUS_STYLE = {
-    settled: 'bg-success/10 text-success border-success/30',
-    empty: 'bg-border/40 text-muted border-border',
-    pending: 'bg-purpleDim/40 text-purpleHi border-purpleDim',
-  } as const;
-
   return (
-    <div className="rounded-lg border border-border bg-gradient-surface overflow-hidden">
+    <div className="rounded-xl border border-border bg-surface shadow-soft hover:shadow-soft-lg transition-shadow duration-500 ease-paper overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-        <div className="text-[11px] uppercase tracking-widest text-muted flex items-center gap-2">
-          <span className="w-1 h-3 rounded-full bg-gradient-cta" />
+        <div className="text-xs text-muted">
           Recent epochs {address ? '(yours)' : '(all)'}
         </div>
-        {loading && <span className="text-[11px] text-muted animate-pulse">refreshing</span>}
+        {loading && <span className="text-xs text-dim">refreshing</span>}
       </div>
       {entries.length === 0 ? (
         <p className="text-sm text-muted px-5 py-12 text-center">No activity yet.</p>
       ) : (
-        <ul className="divide-y divide-border text-[13px]">
+        <ul className="divide-y divide-border text-sm">
           {entries.map((e) => (
             <li
               key={e.epochId.toString()}
-              className="flex items-center justify-between px-5 py-3 hover:bg-surface/40 transition-colors"
+              className="flex items-center justify-between px-5 py-3"
             >
-              <span className="font-mono text-mutedHi w-20">#{e.epochId.toString()}</span>
-              <span className="text-muted text-[12px] flex-1 text-center font-mono">
+              <span className="font-mono text-text w-20">#{e.epochId.toString()}</span>
+              <span className="text-muted text-xs font-mono">
                 {e.orderCount}o · {e.swaps}s · {e.refunds}r
               </span>
-              <span
-                className={`text-[10px] uppercase tracking-widest font-mono px-2 py-0.5 rounded border ${STATUS_STYLE[e.status]}`}
-              >
-                {e.status}
+              <span className={`text-xs font-mono ${STATUS_STYLE[e.status]}`}>
+                {STATUS_LABEL[e.status]}
               </span>
             </li>
           ))}
         </ul>
       )}
-      <div className="px-5 py-3 text-[10px] text-muted border-t border-border">
-        Events from the last {LOOKBACK_BLOCKS.toString()} blocks.
+      <div className="px-5 py-3 text-xs text-muted border-t border-border">
+        Last {LOOKBACK_BLOCKS.toString()} blocks.
       </div>
     </div>
   );
