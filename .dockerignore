@@ -1,0 +1,36 @@
+# Anything not needed at runtime. Keep the image small and keep secrets out.
+
+# Dependencies — reinstalled in the image
+node_modules
+frontend/node_modules
+
+# Frontend — deployed separately
+frontend
+
+# Hardhat outputs — rebuilt in the image
+artifacts
+cache
+typechain-types
+
+# Tests + scripts — not needed by the committee daemon
+test
+scripts
+
+# Secrets — extra belt-and-braces on top of .gitignore
+.env
+.env.*
+decryptor/config/node*.env
+decryptor/config/*.env
+
+# Dev / OS noise
+.git
+.github
+.vscode
+.idea
+logs
+*.log
+.DS_Store
+Thumbs.db
+
+# Memory / plan docs
+logs/
