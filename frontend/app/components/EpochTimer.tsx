@@ -36,6 +36,15 @@ export function EpochTimer() {
   const timeLeft = Math.max(0, endTime - now);
   const progress = Math.max(0, Math.min(100, ((totalDuration - timeLeft) / totalDuration) * 100));
 
+  // Three meaningful states once the epoch window has expired:
+  //   - settling: orders exist, committee is actively revealing
+  //   - idle:     no orders, decryptors intentionally skip closeEpoch
+  //               (Solidity _rolloverIfExpired handles it on the next swap)
+  //   - counting: epoch still open, regular countdown
+  const expired = timeLeft === 0;
+  const isSettling = expired && orderCount > 0 && !closed;
+  const isIdle = expired && orderCount === 0 && !closed;
+
   if (!addressesConfigured) {
     return (
       <div className="rounded-xl border border-border bg-surface shadow-soft px-5 py-4 text-sm text-muted">
@@ -56,13 +65,25 @@ export function EpochTimer() {
           </span>
           {closed && <span className="text-xs text-success">closed</span>}
         </div>
-        <span className="font-mono text-text">
-          {timeLeft > 0 ? `${timeLeft}s` : <span className="text-muted">settling…</span>}
+        <span className="font-mono">
+          {!expired ? (
+            <span className="text-text">{timeLeft}s</span>
+          ) : isSettling ? (
+            <span className="text-muted live-dot">settling…</span>
+          ) : isIdle ? (
+            <span className="text-dim text-xs uppercase tracking-widest">
+              idle · awaiting order
+            </span>
+          ) : (
+            <span className="text-muted">—</span>
+          )}
         </span>
       </div>
       <div className="h-px bg-border">
         <div
-          className="h-full bg-purple transition-[width] duration-300"
+          className={`h-full transition-[width] duration-300 ${
+            isIdle ? 'bg-dim/40' : isSettling ? 'bg-purple live-dot' : 'bg-purple'
+          }`}
           style={{ width: `${progress}%` }}
         />
       </div>
