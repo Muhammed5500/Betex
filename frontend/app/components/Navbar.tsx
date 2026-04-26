@@ -44,7 +44,13 @@ export function Navbar() {
             })}
           </nav>
         </div>
-        <WalletButton />
+        <div className="flex items-center gap-3 sm:gap-4">
+          <span className="hidden sm:flex items-center gap-1.5 text-eyebrow uppercase font-mono text-muted">
+            <span className="w-1.5 h-1.5 rounded-full bg-success live-dot" />
+            Monad testnet
+          </span>
+          <WalletButton />
+        </div>
       </div>
     </header>
   );

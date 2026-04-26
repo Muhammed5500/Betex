@@ -78,11 +78,19 @@ export function CommitteeStatus() {
               ? `live · #${s.lastEpoch}`
               : `last #${s.lastEpoch}`;
           return (
-            <li key={i} className="flex items-center gap-3">
-              <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
-              <span className="font-mono text-text">Node {i}</span>
-              {i === 0 && <span className="text-xs text-muted">· combiner</span>}
-              <span className="text-xs ml-auto font-mono text-muted">{label}</span>
+            <li key={i} className="flex items-center gap-2">
+              <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${dotClass}`} />
+              <span className="font-mono text-text whitespace-nowrap">
+                Node&nbsp;{i}
+              </span>
+              {i === 0 && (
+                <span className="text-[11px] text-dim whitespace-nowrap">
+                  · combiner
+                </span>
+              )}
+              <span className="text-xs ml-auto font-mono text-muted whitespace-nowrap">
+                {label}
+              </span>
             </li>
           );
         })}

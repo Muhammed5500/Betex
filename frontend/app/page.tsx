@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { CommitteeStatus } from './components/CommitteeStatus';
-import { EpochTimer } from './components/EpochTimer';
 import { PoolStats } from './components/PoolStats';
 
 export default function HomePage() {
@@ -25,9 +24,8 @@ export default function HomePage() {
           its own polling loop against Monad RPC; the combiner (Node 0) waits
           for two shares before sealing the batch.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CommitteeStatus />
-          <EpochTimer />
           <PoolStats />
         </div>
       </Entry>

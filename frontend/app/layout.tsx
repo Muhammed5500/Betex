@@ -27,25 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased">
         <Providers>
           <div className="relative z-10 min-h-screen flex flex-col">
-            {/* Notebook masthead */}
-            <div className="border-b border-border">
-              <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between text-eyebrow uppercase font-mono text-muted">
-                <div>
-                  BTX <span className="text-text">Field Notebook</span>
-                </div>
-                <div className="hidden sm:flex items-center gap-4">
-                  <span>Vol. 1</span>
-                  <span className="opacity-40">·</span>
-                  <span>Apr 2026</span>
-                  <span className="opacity-40">·</span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-success live-dot" />
-                    Monad testnet
-                  </span>
-                </div>
-              </div>
-            </div>
-
             <Navbar />
             <main className="flex-1 px-6 py-12 max-w-6xl mx-auto w-full">{children}</main>
 

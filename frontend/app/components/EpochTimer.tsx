@@ -55,29 +55,32 @@ export function EpochTimer() {
 
   return (
     <div className="rounded-xl border border-border bg-surface shadow-soft hover:shadow-soft-lg transition-shadow duration-500 ease-paper overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 text-sm">
-        <div className="flex items-center gap-3 text-muted">
+      <div className="px-5 pt-4 pb-3">
+        {/* Header: title (left)  ·  status (right) */}
+        <div className="flex items-center justify-between text-xs text-muted mb-3">
           <span>Epoch</span>
-          <span className="font-mono text-text">#{epochId?.toString() ?? '—'}</span>
+          <span className="font-mono whitespace-nowrap">
+            {!expired ? (
+              <span className="text-text">{timeLeft}s</span>
+            ) : isSettling ? (
+              <span className="text-muted live-dot">settling…</span>
+            ) : isIdle ? (
+              <span className="text-dim">idle</span>
+            ) : closed ? (
+              <span className="text-success">closed</span>
+            ) : (
+              <span className="text-muted">—</span>
+            )}
+          </span>
+        </div>
+        {/* Body: epoch id · order count */}
+        <div className="flex items-baseline gap-2 font-mono text-sm">
+          <span className="text-text">#{epochId?.toString() ?? '—'}</span>
           <span className="text-dim">·</span>
-          <span>
+          <span className="text-muted whitespace-nowrap">
             {orderCount} {orderCount === 1 ? 'order' : 'orders'}
           </span>
-          {closed && <span className="text-xs text-success">closed</span>}
         </div>
-        <span className="font-mono">
-          {!expired ? (
-            <span className="text-text">{timeLeft}s</span>
-          ) : isSettling ? (
-            <span className="text-muted live-dot">settling…</span>
-          ) : isIdle ? (
-            <span className="text-dim text-xs uppercase tracking-widest">
-              idle · awaiting order
-            </span>
-          ) : (
-            <span className="text-muted">—</span>
-          )}
-        </span>
       </div>
       <div className="h-px bg-border">
         <div
