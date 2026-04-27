@@ -476,6 +476,6 @@ All well within Monad's 30M block gas limit. The constructor is the single most 
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+AGPL-3.0-only. See [LICENSE](LICENSE).
 
 Built for the **Monad Kayseri 2026** hackathon by [@Muhammed5500](https://github.com/Muhammed5500).

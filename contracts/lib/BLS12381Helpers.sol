@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.24;
 
 /// @title Packing helpers for EIP-2537 precompile inputs.
