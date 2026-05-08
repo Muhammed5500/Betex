@@ -3,7 +3,7 @@
 // Runs inside the Hardhat runtime. Steps:
 //   1. (Re)run trusted-setup.js if decryptor/config/deploy-params.json is missing
 //      or --fresh is passed.
-//   2. Deploy MockMON, MockUSDC, SealedAMM, SchnorrVerifier, BTXVerifier, EncryptedPool.
+//   2. Deploy TestERC20 (×2 — MON, USDC), SealedAMM, SchnorrVerifier, BTXVerifier, EncryptedPool.
 //   3. Wire AMM → pool; bootstrap 10k MON + 40k USDC liquidity.
 //   4. Patch decryptor/config/nodeK.env files (RPC + PRIVATE_KEY + contract addrs).
 //   5. Write frontend/.env.local with NEXT_PUBLIC_* env vars.
@@ -59,11 +59,12 @@ function ensureTrustedSetup() {
 
 async function deployStack(deployer, nodeSigners, deployParams) {
   console.log('[step 2] deploying contracts');
-  const mon = await (await ethers.getContractFactory('MockMON', deployer)).deploy();
+  const TokenFactory = await ethers.getContractFactory('TestERC20', deployer);
+  const mon = await TokenFactory.deploy('Test MON', 'MON', 18);
   await mon.waitForDeployment();
   const monAddr = await mon.getAddress();
 
-  const usdc = await (await ethers.getContractFactory('MockUSDC', deployer)).deploy();
+  const usdc = await TokenFactory.deploy('Test USDC', 'USDC', 6);
   await usdc.waitForDeployment();
   const usdcAddr = await usdc.getAddress();
 
@@ -97,8 +98,8 @@ async function deployStack(deployer, nodeSigners, deployParams) {
   await pool.waitForDeployment();
   const poolAddr = await pool.getAddress();
 
-  console.log(`  MockMON        ${monAddr}`);
-  console.log(`  MockUSDC       ${usdcAddr}`);
+  console.log(`  TestMON        ${monAddr}`);
+  console.log(`  TestUSDC       ${usdcAddr}`);
   console.log(`  SealedAMM      ${ammAddr}`);
   console.log(`  SchnorrVerifier ${schnorrAddr}`);
   console.log(`  BTXVerifier    ${btxAddr}`);
@@ -221,8 +222,8 @@ async function main() {
     deployer: deployer.address,
     nodes: contracts.nodeAddrs,
     contracts: {
-      MockMON: contracts.monAddr,
-      MockUSDC: contracts.usdcAddr,
+      TestMON: contracts.monAddr,
+      TestUSDC: contracts.usdcAddr,
       SealedAMM: contracts.ammAddr,
       SchnorrVerifier: contracts.schnorrAddr,
       BTXVerifier: contracts.btxAddr,

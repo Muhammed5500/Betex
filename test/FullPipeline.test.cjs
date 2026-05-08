@@ -41,8 +41,9 @@ describe('Full pipeline (AES + BTX + combiner)', function () {
     nodes = [signers[1], signers[2], signers[3]];
     user = signers[4];
 
-    mon = await (await ethers.getContractFactory('MockMON')).deploy();
-    usdc = await (await ethers.getContractFactory('MockUSDC')).deploy();
+    const TokenFactory = await ethers.getContractFactory('TestERC20');
+    mon = await TokenFactory.deploy('Test MON', 'MON', 18);
+    usdc = await TokenFactory.deploy('Test USDC', 'USDC', 6);
     monAddr = await mon.getAddress();
     usdcAddr = await usdc.getAddress();
 

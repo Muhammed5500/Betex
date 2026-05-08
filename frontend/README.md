@@ -53,8 +53,8 @@ default RPC and chain id are used if unset:
 | `NEXT_PUBLIC_SEALED_AMM_ADDRESS` | `SealedAMM` |
 | `NEXT_PUBLIC_BTX_VERIFIER_ADDRESS` | `BTXVerifier` |
 | `NEXT_PUBLIC_SCHNORR_VERIFIER_ADDRESS` | `SchnorrVerifier` |
-| `NEXT_PUBLIC_MOCK_MON_ADDRESS` | `MockMON` |
-| `NEXT_PUBLIC_MOCK_USDC_ADDRESS` | `MockUSDC` |
+| `NEXT_PUBLIC_WMON_ADDRESS` | canonical WMON (`0xFb8bf4...C541`) |
+| `NEXT_PUBLIC_USDC_ADDRESS` | Circle testnet USDC (`0x534b2f...43A3`) |
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | optional — enables WC v2 QR |
 
 ## Runtime requirements

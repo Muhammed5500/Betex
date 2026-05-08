@@ -39,6 +39,19 @@ function loadAbi(name, sub = '') {
   return JSON.parse(fs.readFileSync(p, 'utf8')).abi;
 }
 
+// Minimal ABIs for canonical Circle USDC + WMON. No mock contracts; tokens are
+// not deployed by us and have no `mint` to call.
+const ERC20_ABI = [
+  'function balanceOf(address) view returns (uint256)',
+  'function allowance(address,address) view returns (uint256)',
+  'function approve(address,uint256) returns (bool)',
+];
+const WMON_ABI = [
+  ...ERC20_ABI,
+  'function deposit() payable',
+  'function withdraw(uint256)',
+];
+
 const provider = new JsonRpcProvider(RPC);
 // NonceManager avoids a hardhat auto-mine race where getTransactionCount(pending)
 // returns the stale value between awaited txs on the same account.
@@ -47,11 +60,11 @@ const wallet = new NonceManager(rawWallet);
 wallet.address = rawWallet.address; // NonceManager wraps Wallet; re-expose .address
 
 const pool = new Contract(addresses.contracts.EncryptedPool, loadAbi('EncryptedPool'), wallet);
-const usdc = new Contract(addresses.contracts.MockUSDC, loadAbi('MockUSDC', 'tokens'), wallet);
-const mon = new Contract(addresses.contracts.MockMON, loadAbi('MockMON', 'tokens'), wallet);
+const usdc = new Contract(addresses.contracts.USDC, ERC20_ABI, wallet);
+const mon = new Contract(addresses.contracts.WMON, WMON_ABI, wallet);
 const amm = new Contract(addresses.contracts.SealedAMM, loadAbi('SealedAMM'), wallet);
 
-const USDC_IN = parseUnits('75', 6); // 75 USDC → MON
+const USDC_IN = parseUnits('5', 6); // 5 USDC → MON  (small swap on $300+ pool)
 const DEPOSIT_BUFFER = USDC_IN; // deposit == input
 
 async function main() {
@@ -64,13 +77,13 @@ async function main() {
     mon.balanceOf(me),
     usdc.balanceOf(me),
   ]);
-  console.log(`[smoke] pre: ${formatEther(bal)} MON gas, ${formatUnits(monBal0, 18)} MON, ${formatUnits(usdcBal0, 6)} USDC`);
+  console.log(`[smoke] pre: ${formatEther(bal)} MON gas, ${formatUnits(monBal0, 18)} WMON, ${formatUnits(usdcBal0, 6)} USDC`);
 
-  // 1. Mint USDC if needed
+  // 1. Insufficient USDC → abort. No mint on Circle USDC; user must top up.
   if (usdcBal0 < USDC_IN) {
-    console.log(`[smoke] minting ${formatUnits(USDC_IN, 6)} USDC to self`);
-    const tx = await usdc.mint(me, USDC_IN);
-    await tx.wait();
+    throw new Error(
+      `Smoke wallet has ${formatUnits(usdcBal0, 6)} USDC, need ${formatUnits(USDC_IN, 6)}. Get more from https://faucet.circle.com (Monad testnet).`,
+    );
   }
 
   // 2. Approve pool
@@ -85,15 +98,15 @@ async function main() {
   const nonce = BigInt(Date.now());
   const orderData = {
     user: me,
-    tokenIn: addresses.contracts.MockUSDC,
+    tokenIn: addresses.contracts.USDC,
     amountIn: USDC_IN,
-    tokenOut: addresses.contracts.MockMON,
+    tokenOut: addresses.contracts.WMON,
     minAmountOut: 0n,
     nonce,
   };
 
   // Preview expected MON out from AMM (no fee-aware slippage for smoke)
-  const preview = await amm.getAmountOut(USDC_IN, addresses.contracts.MockUSDC);
+  const preview = await amm.getAmountOut(USDC_IN, addresses.contracts.USDC);
   console.log(`[smoke] AMM preview: ${formatUnits(USDC_IN, 6)} USDC → ${formatUnits(preview, 18)} MON`);
 
   const enc = encryptOrder(orderData, ek);
@@ -107,7 +120,7 @@ async function main() {
   console.log(`[smoke] submitting encrypted order (orderHash=${enc.orderHash.slice(0, 18)}...)`);
   const epochBefore = Number(await pool.currentEpochId());
   const submitTx = await pool.submitEncryptedOrder(
-    ct_1, ct_2, pi_R, pi_s, aes_ct, enc.orderHash, USDC_IN, addresses.contracts.MockUSDC,
+    ct_1, ct_2, pi_R, pi_s, aes_ct, enc.orderHash, USDC_IN, addresses.contracts.USDC,
   );
   console.log(`[smoke]   tx ${submitTx.hash}`);
   const rc = await submitTx.wait();

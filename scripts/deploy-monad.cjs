@@ -24,11 +24,38 @@ const DEPLOY_PARAMS = path.join(CONFIG_DIR, 'deploy-params.json');
 const PUBLIC_PARAMS = path.join(CONFIG_DIR, 'public-params.json');
 const FRONTEND_DIR = path.resolve(ROOT, 'frontend');
 
-const INIT_MON = ethers.parseUnits('10000', 18);
-const INIT_USDC = ethers.parseUnits('40000', 6);
+const INIT_MON = ethers.parseUnits('4500', 18);
+const INIT_USDC = ethers.parseUnits('1800', 6);
 
 const EPOCH_DURATION = Number(process.env.BTX_EPOCH_DURATION ?? 10);
 const REFUND_TIMEOUT = Number(process.env.BTX_REFUND_TIMEOUT ?? 60);
+
+// Canonical Monad testnet token addresses (post-regenesis 2025-12-16).
+// Production deploy uses real Circle USDC + canonical WMON; mocks are gone.
+const USDC_ADDRESS = process.env.USDC_ADDRESS
+  ?? '0x534b2f3A21130d7a60830c2Df862319e593943A3';
+const WMON_ADDRESS = process.env.WMON_ADDRESS
+  ?? '0xFb8bf4c1CC7a94c73D209a149eA2AbEa852BC541';
+
+// Existing verifier deployments — token-agnostic, reused across redeploys.
+// Override via env if you need to point at a fresh trusted-setup output.
+const BTX_VERIFIER_ADDRESS = process.env.BTX_VERIFIER_ADDRESS
+  ?? '0x3850d3b5DF4Dc5F05fbA420c3890435575ad7240';
+const SCHNORR_VERIFIER_ADDRESS = process.env.SCHNORR_VERIFIER_ADDRESS
+  ?? '0xD93A0fd7Ea4521e7179B1265880077d22fb55C4c';
+
+const WMON_ABI = [
+  'function deposit() external payable',
+  'function withdraw(uint256) external',
+  'function balanceOf(address) external view returns (uint256)',
+  'function approve(address, uint256) external returns (bool)',
+];
+
+const ERC20_ABI = [
+  'function balanceOf(address) external view returns (uint256)',
+  'function approve(address, uint256) external returns (bool)',
+  'function decimals() external view returns (uint8)',
+];
 
 function requireEnvAddress(key) {
   const v = process.env[key];
@@ -73,51 +100,58 @@ async function main() {
     );
   }
 
-  // 1. Tokens
-  console.log('[1] deploying MockMON / MockUSDC');
-  const mon = await (await ethers.getContractFactory('MockMON', deployer)).deploy();
-  await mon.waitForDeployment();
-  const monAddr = await mon.getAddress();
+  // 1. Reuse canonical tokens (Circle USDC + canonical WMON). No deploy.
+  console.log('[1] using canonical tokens');
+  console.log(`    USDC=${USDC_ADDRESS}  WMON=${WMON_ADDRESS}`);
+  const wmon = new ethers.Contract(WMON_ADDRESS, WMON_ABI, deployer);
+  const usdc = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, deployer);
+  const monAddr = WMON_ADDRESS;
+  const usdcAddr = USDC_ADDRESS;
 
-  const usdc = await (await ethers.getContractFactory('MockUSDC', deployer)).deploy();
-  await usdc.waitForDeployment();
-  const usdcAddr = await usdc.getAddress();
-  console.log(`    MON=${monAddr}  USDC=${usdcAddr}`);
+  // 2. Pre-flight balance + wrap step. Pool needs INIT_MON worth of WMON.
+  //    If deployer is short, wrap from native MON balance to top up.
+  console.log('[2] checking deployer balances + wrapping MON if needed');
+  const deployerWmon = await wmon.balanceOf(deployer.address);
+  const deployerUsdc = await usdc.balanceOf(deployer.address);
+  console.log(
+    `    WMON: ${ethers.formatEther(deployerWmon)} / need ${ethers.formatEther(INIT_MON)}`,
+  );
+  console.log(
+    `    USDC: ${ethers.formatUnits(deployerUsdc, 6)} / need ${ethers.formatUnits(INIT_USDC, 6)}`,
+  );
+  if (deployerUsdc < INIT_USDC) {
+    throw new Error(
+      `Deployer holds ${ethers.formatUnits(deployerUsdc, 6)} USDC, need ${ethers.formatUnits(INIT_USDC, 6)}. Get from https://faucet.circle.com (Monad testnet).`,
+    );
+  }
+  if (deployerWmon < INIT_MON) {
+    const need = INIT_MON - deployerWmon;
+    const nativeBal = await ethers.provider.getBalance(deployer.address);
+    // Reserve ~1 MON for gas across the rest of deploy.
+    if (nativeBal < need + ethers.parseEther('1')) {
+      throw new Error(
+        `Need to wrap ${ethers.formatEther(need)} MON but native balance ${ethers.formatEther(nativeBal)} too low. Top up native MON first.`,
+      );
+    }
+    console.log(`    wrapping ${ethers.formatEther(need)} MON → WMON`);
+    await (await wmon.deposit({ value: need })).wait();
+  }
 
-  // 2. AMM
-  console.log('[2] deploying SealedAMM');
+  // 3. AMM (paired against WMON + USDC)
+  console.log('[3] deploying SealedAMM');
   const amm = await (await ethers.getContractFactory('SealedAMM', deployer)).deploy(monAddr, usdcAddr);
   await amm.waitForDeployment();
   const ammAddr = await amm.getAddress();
   console.log(`    SealedAMM=${ammAddr}`);
 
-  // 3. SchnorrVerifier
-  console.log('[3] deploying SchnorrVerifier');
-  const schnorr = await (await ethers.getContractFactory('SchnorrVerifier', deployer)).deploy();
-  await schnorr.waitForDeployment();
-  const schnorrAddr = await schnorr.getAddress();
-  console.log(`    SchnorrVerifier=${schnorrAddr}`);
+  // 4. Reuse existing verifier deployments. Token-agnostic, no need to redeploy.
+  console.log('[4] reusing existing verifiers');
+  console.log(`    SchnorrVerifier=${SCHNORR_VERIFIER_ADDRESS}`);
+  console.log(`    BTXVerifier=${BTX_VERIFIER_ADDRESS}`);
+  const schnorrAddr = SCHNORR_VERIFIER_ADDRESS;
+  const btxAddr = BTX_VERIFIER_ADDRESS;
 
-  // 4. BTXVerifier
-  // Constructor copies ~20 KB (h_powers + pkCommitments) into storage at Bmax=16;
-  // measured ~18.1M gas. Ethers' default estimation caps at 2^24=16.77M which
-  // silently runs out — pass gasLimit explicitly, well under Monad's 30M tx cap.
-  console.log('[4] deploying BTXVerifier');
-  const btx = await (await ethers.getContractFactory('BTXVerifier', deployer)).deploy(
-    deployParams.N,
-    deployParams.tPlus1,
-    deployParams.Bmax,
-    deployParams.h_powers,
-    deployParams.pkCommitments,
-    deployParams.omega,
-    nodeAddrs,
-    { gasLimit: 25_000_000 },
-  );
-  await btx.waitForDeployment();
-  const btxAddr = await btx.getAddress();
-  console.log(`    BTXVerifier=${btxAddr}`);
-
-  // 5. EncryptedPool
+  // 5. EncryptedPool — only this + SealedAMM are fresh on each redeploy.
   console.log('[5] deploying EncryptedPool');
   const pool = await (
     await ethers.getContractFactory('EncryptedPool', deployer)
@@ -126,15 +160,15 @@ async function main() {
   const poolAddr = await pool.getAddress();
   console.log(`    EncryptedPool=${poolAddr}`);
 
-  // 6. Wire + liquidity
+  // 6. Wire + liquidity (no mint — deployer already holds tokens)
   console.log('[6] wiring AMM + bootstrapping liquidity');
   await (await amm.setSealedPool(poolAddr)).wait();
-  await (await mon.mint(deployer.address, INIT_MON)).wait();
-  await (await usdc.mint(deployer.address, INIT_USDC)).wait();
-  await (await mon.approve(ammAddr, INIT_MON)).wait();
+  await (await wmon.approve(ammAddr, INIT_MON)).wait();
   await (await usdc.approve(ammAddr, INIT_USDC)).wait();
   await (await amm.initialize(INIT_MON, INIT_USDC)).wait();
-  console.log('    10000 MON + 40000 USDC deposited');
+  console.log(
+    `    ${ethers.formatEther(INIT_MON)} WMON + ${ethers.formatUnits(INIT_USDC, 6)} USDC deposited`,
+  );
 
   // 7. Post-deploy sanity checks
   console.log('[7] post-deploy checks');
@@ -173,8 +207,8 @@ NEXT_PUBLIC_ENCRYPTED_POOL_ADDRESS=${poolAddr}
 NEXT_PUBLIC_SEALED_AMM_ADDRESS=${ammAddr}
 NEXT_PUBLIC_BTX_VERIFIER_ADDRESS=${btxAddr}
 NEXT_PUBLIC_SCHNORR_VERIFIER_ADDRESS=${schnorrAddr}
-NEXT_PUBLIC_MOCK_MON_ADDRESS=${monAddr}
-NEXT_PUBLIC_MOCK_USDC_ADDRESS=${usdcAddr}
+NEXT_PUBLIC_WMON_ADDRESS=${monAddr}
+NEXT_PUBLIC_USDC_ADDRESS=${usdcAddr}
 `;
     fs.writeFileSync(path.join(FRONTEND_DIR, '.env.local'), body);
     const publicDir = path.join(FRONTEND_DIR, 'public');
@@ -192,8 +226,8 @@ NEXT_PUBLIC_MOCK_USDC_ADDRESS=${usdcAddr}
     deployer: deployer.address,
     nodes: nodeAddrs,
     contracts: {
-      MockMON: monAddr,
-      MockUSDC: usdcAddr,
+      WMON: monAddr,
+      USDC: usdcAddr,
       SealedAMM: ammAddr,
       SchnorrVerifier: schnorrAddr,
       BTXVerifier: btxAddr,

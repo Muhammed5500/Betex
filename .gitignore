@@ -8,6 +8,8 @@ typechain-types/
 
 # Env / secrets
 .env
+.env.local
+.env.*.local
 decryptor/config/node*.env
 decryptor/config/testnet-wallets.json
 

@@ -2,21 +2,21 @@
   "network": "monadTestnet",
   "chainId": 10143,
   "rpcUrl": "https://testnet-rpc.monad.xyz",
-  "deployer": "0xF30FF34Cc5DFaC8362546caBF385BCCe9f24Ac36",
+  "deployer": "0xe5dD6d73ddb261C7115ccc753e6Fd78bcB8f7d27",
   "nodes": [
     "0xBF4F9DE11D3bd3f74F29b9fa2107Dfd8aC57fBcA",
     "0xBe8721E70230d606Ff8E48A60d43fD5CD312B490",
     "0x3d75389438718Ab9902CE40727825a99bECf4E4E"
   ],
   "contracts": {
-    "MockMON": "0x7CD1cf590d76473D45C1c5FaC2eD507E6EE5Fe9d",
-    "MockUSDC": "0xE7dA90950524e29475FD25365443ae971C2005CD",
-    "SealedAMM": "0x019D5FFd40fD8e286f9992D0D1D17a34Ef6b8a24",
+    "WMON": "0xFb8bf4c1CC7a94c73D209a149eA2AbEa852BC541",
+    "USDC": "0x534b2f3A21130d7a60830c2Df862319e593943A3",
+    "SealedAMM": "0x3fc64CE00Abd3583d6fd300825f10e27CA994d89",
     "SchnorrVerifier": "0xD93A0fd7Ea4521e7179B1265880077d22fb55C4c",
     "BTXVerifier": "0x3850d3b5DF4Dc5F05fbA420c3890435575ad7240",
-    "EncryptedPool": "0x3c3614aB48ad90419Cb3eD94808fE24Bb4055152"
+    "EncryptedPool": "0xf1306FD6bA3D4D6ccb0E374CF800907FA9AE7EeC"
   },
-  "epochDuration": 5,
+  "epochDuration": 10,
   "refundTimeout": 60,
-  "generatedAt": "2026-04-23T13:07:45.447Z"
+  "generatedAt": "2026-05-08T13:58:36.102Z"
 }

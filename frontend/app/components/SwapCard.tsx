@@ -14,7 +14,7 @@ import { encryptOrder, type OrderData } from '../lib/btx-encrypt';
 import {
   ADDRESSES,
   ENCRYPTED_POOL_ABI,
-  MINTABLE_ERC20_ABI,
+  ERC20_ABI,
   SEALED_AMM_ABI,
   TOKENS,
   type TokenKey,
@@ -58,7 +58,7 @@ export function SwapCard() {
   }, [amountStr, cfgIn.decimals]);
 
   const { data: balance } = useReadContract({
-    abi: MINTABLE_ERC20_ABI,
+    abi: ERC20_ABI,
     address: cfgIn.address,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
@@ -66,7 +66,7 @@ export function SwapCard() {
   });
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    abi: MINTABLE_ERC20_ABI,
+    abi: ERC20_ABI,
     address: cfgIn.address,
     functionName: 'allowance',
     args: address ? [address, ADDRESSES.encryptedPool] : undefined,
@@ -126,7 +126,7 @@ export function SwapCard() {
       if ((allowance as bigint | undefined) === undefined || (allowance as bigint) < parsed) {
         setStep('approving');
         const approveHash = await approveAsync({
-          abi: MINTABLE_ERC20_ABI,
+          abi: ERC20_ABI,
           address: cfgIn.address,
           functionName: 'approve',
           args: [ADDRESSES.encryptedPool, parsed],

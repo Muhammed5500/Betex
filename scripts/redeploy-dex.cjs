@@ -1,6 +1,6 @@
 // Targeted redeploy: new SealedAMM + EncryptedPool with a different
-// epochDuration (or any other constructor param). Reuses existing MockMON,
-// MockUSDC, BTXVerifier, SchnorrVerifier.
+// epochDuration (or any other constructor param). Reuses canonical WMON +
+// Circle USDC + BTXVerifier + SchnorrVerifier from the previous deployment.
 //
 // Usage:
 //   BTX_EPOCH_DURATION=5 npx hardhat --config hardhat.config.cjs \
@@ -15,11 +15,21 @@ const CONFIG_DIR = path.resolve(ROOT, 'decryptor/config');
 const ADDRESSES_FILE = path.join(CONFIG_DIR, 'addresses.monad.json');
 const FRONTEND_DIR = path.resolve(ROOT, 'frontend');
 
-const INIT_MON = ethers.parseUnits('10000', 18);
-const INIT_USDC = ethers.parseUnits('40000', 6);
+const INIT_MON = ethers.parseUnits('4500', 18);
+const INIT_USDC = ethers.parseUnits('1800', 6);
 
 const EPOCH_DURATION = Number(process.env.BTX_EPOCH_DURATION ?? 5);
 const REFUND_TIMEOUT = Number(process.env.BTX_REFUND_TIMEOUT ?? 60);
+
+const WMON_ABI = [
+  'function deposit() external payable',
+  'function balanceOf(address) external view returns (uint256)',
+  'function approve(address, uint256) external returns (bool)',
+];
+const ERC20_ABI = [
+  'function balanceOf(address) external view returns (uint256)',
+  'function approve(address, uint256) external returns (bool)',
+];
 
 async function main() {
   if (network.name !== 'monadTestnet') {
@@ -33,9 +43,15 @@ async function main() {
   const [deployer] = await ethers.getSigners();
 
   console.log(`[redeploy-dex] network=${network.name} deployer=${deployer.address}`);
+  const wmonAddr = prev.contracts.WMON;
+  const usdcAddr = prev.contracts.USDC;
+  if (!wmonAddr || !usdcAddr) {
+    throw new Error('addresses.monad.json missing WMON/USDC entries — re-run full deploy first');
+  }
+
   console.log(`[redeploy-dex] reusing:`);
-  console.log(`  MockMON          ${prev.contracts.MockMON}`);
-  console.log(`  MockUSDC         ${prev.contracts.MockUSDC}`);
+  console.log(`  WMON             ${wmonAddr}`);
+  console.log(`  USDC             ${usdcAddr}`);
   console.log(`  SchnorrVerifier  ${prev.contracts.SchnorrVerifier}`);
   console.log(`  BTXVerifier      ${prev.contracts.BTXVerifier}`);
   console.log(`[redeploy-dex] new epochDuration=${EPOCH_DURATION}s refundTimeout=${REFUND_TIMEOUT}s`);
@@ -47,7 +63,7 @@ async function main() {
   console.log('[1] deploying SealedAMM');
   const amm = await (
     await ethers.getContractFactory('SealedAMM', deployer)
-  ).deploy(prev.contracts.MockMON, prev.contracts.MockUSDC);
+  ).deploy(wmonAddr, usdcAddr);
   await amm.waitForDeployment();
   const ammAddr = await amm.getAddress();
   console.log(`    SealedAMM=${ammAddr}`);
@@ -67,18 +83,32 @@ async function main() {
   const poolAddr = await pool.getAddress();
   console.log(`    EncryptedPool=${poolAddr}`);
 
-  // 3. Wire AMM + bootstrap liquidity
+  // 3. Wire AMM + bootstrap liquidity (deployer must already hold tokens; wrap if short)
   console.log('[3] wiring AMM + bootstrap liquidity');
   await (await amm.setSealedPool(poolAddr)).wait();
 
-  const mon = await ethers.getContractAt('MockMON', prev.contracts.MockMON, deployer);
-  const usdc = await ethers.getContractAt('MockUSDC', prev.contracts.MockUSDC, deployer);
-  await (await mon.mint(deployer.address, INIT_MON)).wait();
-  await (await usdc.mint(deployer.address, INIT_USDC)).wait();
-  await (await mon.approve(ammAddr, INIT_MON)).wait();
+  const wmon = new ethers.Contract(wmonAddr, WMON_ABI, deployer);
+  const usdc = new ethers.Contract(usdcAddr, ERC20_ABI, deployer);
+
+  const wmonBal = await wmon.balanceOf(deployer.address);
+  if (wmonBal < INIT_MON) {
+    const need = INIT_MON - wmonBal;
+    console.log(`    wrapping ${ethers.formatEther(need)} MON → WMON`);
+    await (await wmon.deposit({ value: need })).wait();
+  }
+  const usdcBal = await usdc.balanceOf(deployer.address);
+  if (usdcBal < INIT_USDC) {
+    throw new Error(
+      `Deployer holds ${ethers.formatUnits(usdcBal, 6)} USDC, need ${ethers.formatUnits(INIT_USDC, 6)}. Top up via https://faucet.circle.com.`,
+    );
+  }
+
+  await (await wmon.approve(ammAddr, INIT_MON)).wait();
   await (await usdc.approve(ammAddr, INIT_USDC)).wait();
   await (await amm.initialize(INIT_MON, INIT_USDC)).wait();
-  console.log(`    liquidity: 10000 MON + 40000 USDC`);
+  console.log(
+    `    liquidity: ${ethers.formatEther(INIT_MON)} WMON + ${ethers.formatUnits(INIT_USDC, 6)} USDC`,
+  );
 
   // 4. Sanity check
   const curId = await pool.currentEpochId();

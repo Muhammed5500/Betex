@@ -1,6 +1,6 @@
-// Handwritten ABI subset matching contracts/ (EncryptedPool, SealedAMM, BTXVerifier,
-// SchnorrVerifier, MockMON/USDC). Kept minimal — only the functions/events the
-// frontend actually consumes.
+// Handwritten ABI subset matching contracts/ (EncryptedPool, SealedAMM,
+// BTXVerifier, SchnorrVerifier) plus standard ERC-20 + WMON. Kept minimal —
+// only the functions/events the frontend actually consumes.
 
 const zero = '0x0000000000000000000000000000000000000000' as const;
 
@@ -12,8 +12,8 @@ export const ADDRESSES = {
   sealedAmm: (process.env.NEXT_PUBLIC_SEALED_AMM_ADDRESS ?? zero) as `0x${string}`,
   btxVerifier: (process.env.NEXT_PUBLIC_BTX_VERIFIER_ADDRESS ?? zero) as `0x${string}`,
   schnorrVerifier: (process.env.NEXT_PUBLIC_SCHNORR_VERIFIER_ADDRESS ?? zero) as `0x${string}`,
-  mockMon: (process.env.NEXT_PUBLIC_MOCK_MON_ADDRESS ?? zero) as `0x${string}`,
-  mockUsdc: (process.env.NEXT_PUBLIC_MOCK_USDC_ADDRESS ?? zero) as `0x${string}`,
+  wmon: (process.env.NEXT_PUBLIC_WMON_ADDRESS ?? zero) as `0x${string}`,
+  usdc: (process.env.NEXT_PUBLIC_USDC_ADDRESS ?? zero) as `0x${string}`,
 } as const;
 
 export const addressesConfigured = !Object.values(ADDRESSES).some((a) => a === zero);
@@ -282,7 +282,10 @@ export const BTX_VERIFIER_ABI = [
   },
 ] as const;
 
-export const MINTABLE_ERC20_ABI = [
+// Standard ERC-20 ABI for Circle USDC and WMON. No `mint` — production tokens
+// don't expose it; users get USDC from Circle's faucet and MON from Monad's
+// testnet faucet, then wrap MON → WMON via the WMON contract.
+export const ERC20_ABI = [
   {
     type: 'function',
     name: 'name',
@@ -331,32 +334,44 @@ export const MINTABLE_ERC20_ABI = [
     ],
     outputs: [{ type: 'bool' }],
   },
+] as const;
+
+// WMON adds the wrap/unwrap pair on top of standard ERC-20. `deposit()` is
+// payable and converts native MON → WMON 1:1; `withdraw(amount)` does the
+// reverse.
+export const WMON_ABI = [
+  ...ERC20_ABI,
   {
     type: 'function',
-    name: 'mint',
+    name: 'deposit',
+    stateMutability: 'payable',
+    inputs: [],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'withdraw',
     stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'to', type: 'address' },
-      { name: 'amount', type: 'uint256' },
-    ],
+    inputs: [{ type: 'uint256' }],
     outputs: [],
   },
 ] as const;
 
 export type TokenKey = 'MON' | 'USDC';
 
-export const TOKENS: Record<TokenKey, { address: `0x${string}`; decimals: number; symbol: string; faucetAmount: bigint }> = {
+export const TOKENS: Record<
+  TokenKey,
+  { address: `0x${string}`; decimals: number; symbol: string }
+> = {
   MON: {
-    address: ADDRESSES.mockMon,
+    address: ADDRESSES.wmon,
     decimals: 18,
     symbol: 'MON',
-    faucetAmount: 1_000n * 10n ** 18n,
   },
   USDC: {
-    address: ADDRESSES.mockUsdc,
+    address: ADDRESSES.usdc,
     decimals: 6,
     symbol: 'USDC',
-    faucetAmount: 5_000n * 10n ** 6n,
   },
 };
 

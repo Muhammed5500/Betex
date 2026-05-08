@@ -11,10 +11,9 @@ describe('SealedAMM', function () {
   beforeEach(async function () {
     [owner, pool, user] = await ethers.getSigners();
 
-    const MockMON = await ethers.getContractFactory('MockMON');
-    mon = await MockMON.deploy();
-    const MockUSDC = await ethers.getContractFactory('MockUSDC');
-    usdc = await MockUSDC.deploy();
+    const TokenFactory = await ethers.getContractFactory('TestERC20');
+    mon = await TokenFactory.deploy('Test MON', 'MON', 18);
+    usdc = await TokenFactory.deploy('Test USDC', 'USDC', 6);
 
     const AMM = await ethers.getContractFactory('SealedAMM');
     amm = await AMM.deploy(await mon.getAddress(), await usdc.getAddress());
