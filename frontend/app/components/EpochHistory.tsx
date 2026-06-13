@@ -13,7 +13,9 @@ interface EpochEntry {
   status: 'pending' | 'settled' | 'empty';
 }
 
-const LOOKBACK_BLOCKS = 50_000n;
+// Monad's public RPC caps eth_getLogs to a 100-block range, so we paginate.
+const LOOKBACK_BLOCKS = 1500n;
+const PAGE_SIZE = 100n;
 
 const STATUS_LABEL: Record<EpochEntry['status'], string> = {
   settled: 'Settled',
@@ -43,36 +45,34 @@ export function EpochHistory() {
         const latest = await client!.getBlockNumber();
         const from = latest > LOOKBACK_BLOCKS ? latest - LOOKBACK_BLOCKS : 0n;
 
-        const [submittedLogs, executedLogs, refundedLogs, closedLogs] = await Promise.all([
-          client!.getContractEvents({
+        // Walk the window in <=100-block pages (RPC limit). Within each page the
+        // four events are fetched in parallel; pages run sequentially so we never
+        // burst more than 4 requests at once and stay under the public rps cap.
+        const submittedLogs: unknown[] = [];
+        const executedLogs: unknown[] = [];
+        const refundedLogs: unknown[] = [];
+        const closedLogs: unknown[] = [];
+
+        for (let start = from; start <= latest; start += PAGE_SIZE) {
+          if (cancelled) return;
+          const end = start + PAGE_SIZE - 1n > latest ? latest : start + PAGE_SIZE - 1n;
+          const base = {
             abi: ENCRYPTED_POOL_ABI,
             address: ADDRESSES.encryptedPool,
-            eventName: 'OrderSubmitted',
-            fromBlock: from,
-            toBlock: latest,
-          }),
-          client!.getContractEvents({
-            abi: ENCRYPTED_POOL_ABI,
-            address: ADDRESSES.encryptedPool,
-            eventName: 'SwapExecuted',
-            fromBlock: from,
-            toBlock: latest,
-          }),
-          client!.getContractEvents({
-            abi: ENCRYPTED_POOL_ABI,
-            address: ADDRESSES.encryptedPool,
-            eventName: 'RefundClaimed',
-            fromBlock: from,
-            toBlock: latest,
-          }),
-          client!.getContractEvents({
-            abi: ENCRYPTED_POOL_ABI,
-            address: ADDRESSES.encryptedPool,
-            eventName: 'EpochClosed',
-            fromBlock: from,
-            toBlock: latest,
-          }),
-        ]);
+            fromBlock: start,
+            toBlock: end,
+          } as const;
+          const [s, e, r, c] = await Promise.all([
+            client!.getContractEvents({ ...base, eventName: 'OrderSubmitted' }),
+            client!.getContractEvents({ ...base, eventName: 'SwapExecuted' }),
+            client!.getContractEvents({ ...base, eventName: 'RefundClaimed' }),
+            client!.getContractEvents({ ...base, eventName: 'EpochClosed' }),
+          ]);
+          submittedLogs.push(...s);
+          executedLogs.push(...e);
+          refundedLogs.push(...r);
+          closedLogs.push(...c);
+        }
 
         const acc = new Map<string, EpochEntry>();
         function bump(id: bigint, mut: (e: EpochEntry) => void) {
