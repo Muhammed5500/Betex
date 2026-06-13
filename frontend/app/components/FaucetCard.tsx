@@ -23,19 +23,23 @@ const MONAD_FAUCET_URL = 'https://testnet.monad.xyz/';
 
 export function FaucetCard() {
   return (
-    <div className="space-y-4">
-      <ExternalFaucet
-        symbol="USDC"
-        href={CIRCLE_FAUCET_URL}
-        description="Circle's official testnet faucet. Pick Monad in the chain selector."
-      />
-      <ExternalFaucet
-        symbol="MON"
-        href={MONAD_FAUCET_URL}
-        description="Monad testnet faucet for native MON. Used for gas and for wrapping into WMON."
-      />
-      <WrapCard />
-      <UnwrapCard />
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <ExternalFaucet
+          symbol="USDC"
+          href={CIRCLE_FAUCET_URL}
+          description="Circle's official testnet faucet. Pick Monad in the chain selector."
+        />
+        <ExternalFaucet
+          symbol="MON"
+          href={MONAD_FAUCET_URL}
+          description="Monad testnet faucet for native MON. Used for gas and for wrapping into WMON."
+        />
+      </div>
+      <div className="space-y-4">
+        <WrapCard />
+        <UnwrapCard />
+      </div>
     </div>
   );
 }

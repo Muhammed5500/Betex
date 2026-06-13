@@ -7,15 +7,7 @@ export default function HomePage() {
   return (
     <div className="space-y-24 sm:space-y-28 pb-12">
       <Hero />
-      <Entry
-        num="§ 2"
-        margin={
-          <>
-            live data{' '}
-            <span className="marker">↘</span>
-          </>
-        }
-      >
+      <Entry num="§ 2">
         <h2 className="font-serif font-medium text-display tracking-tight mb-2">
           On-chain field log.
         </h2>
@@ -30,16 +22,7 @@ export default function HomePage() {
         </div>
       </Entry>
 
-      <Entry
-        num="§ 3"
-        margin={
-          <>
-            three steps,
-            <br />
-            one block <span className="marker">←</span>
-          </>
-        }
-      >
+      <Entry num="§ 3">
         <h2 className="font-serif font-medium text-display tracking-tight mb-2">
           The mechanism, sketched.
         </h2>
@@ -53,20 +36,11 @@ export default function HomePage() {
         <p className="text-muted leading-relaxed mt-7">
           The settlement transaction is atomic. Aggregate pairing check, hash
           binding, Fisher-Yates shuffle, and individual AMM calls happen inside
-          a single block — there is no surface for a bot to interleave on.
+          a single block, leaving no surface for a bot to interleave on.
         </p>
       </Entry>
 
-      <Entry
-        num="§ 4"
-        margin={
-          <span className="font-mono text-marginal text-ink not-italic block leading-relaxed">
-            e(ct₁,h_l) · e(σ,−G₂) = 1<sub className="text-[0.6em]">G_T</sub>
-            <br />
-            <span className="text-dim">— paper §5.2</span>
-          </span>
-        }
-      >
+      <Entry num="§ 4">
         <h2 className="font-serif font-medium text-display tracking-tight mb-2">
           The foundation.
         </h2>
@@ -82,7 +56,7 @@ export default function HomePage() {
           </Link>
           <sup className="cite">[1]</sup>. Each committee server broadcasts a
           single G₁ element per epoch, regardless of how many orders the batch
-          contains — communication per server is{' '}
+          contains, so communication per server is{' '}
           <span className="highlight">
             <code className="font-mono text-[0.95em]">O(1)</code> in the batch
             size
@@ -103,22 +77,22 @@ export default function HomePage() {
           aggregate pairing check via EIP-2537{' '}
           <code className="font-mono text-[0.92em]">PAIRING_CHECK</code>,
           Schnorr NIZK under the Algebraic Group Model, KEM-DEM ciphertext
-          wrapping. §8 — the encrypted mempool — is wrapped as a working DEX
+          wrapping. §8, the encrypted mempool, is wrapped as a working DEX
           with a Uniswap V2-style AMM<sup className="cite">[2]</sup>.
         </p>
 
         <SpecGrid />
       </Entry>
 
-      <Entry num="§ 5" margin={<>try it ↘</>}>
+      <Entry num="§ 5">
         <h2 className="font-serif font-medium text-display tracking-tight mb-2">
           On Monad testnet, today.
         </h2>
         <p className="text-muted leading-relaxed mb-8">
-          Mint mock USDC and MON from the in-app faucet, place a swap, and
-          watch the encrypted batch settle in five seconds. All three committee
-          nodes run as independent processes; the contracts are verified on
-          Monad explorer.
+          Pull testnet USDC and MON from the faucet, wrap your MON, place a
+          swap, and watch the encrypted batch settle in five seconds. All
+          three committee nodes run as independent processes; the contracts
+          are verified on Monad explorer.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <Link
@@ -126,18 +100,6 @@ export default function HomePage() {
             className="focus-ring inline-flex items-center gap-2 px-6 py-3 rounded-md bg-text text-bg font-medium hover:bg-textHi transition-colors"
           >
             Launch app <span aria-hidden>→</span>
-          </Link>
-          <Link
-            href="/faucet"
-            className="focus-ring inline-flex items-center gap-2 px-6 py-3 rounded-md bg-bg text-text font-medium border border-border hover:border-borderHi transition-colors"
-          >
-            Get testnet tokens
-          </Link>
-          <Link
-            href="/epochs"
-            className="focus-ring inline-flex items-center gap-1.5 px-3 py-2 text-muted hover:text-text transition-colors"
-          >
-            Browse epochs →
           </Link>
         </div>
       </Entry>
@@ -153,14 +115,10 @@ export default function HomePage() {
 
 function Hero() {
   return (
-    <section className="grid lg:grid-cols-[60px_1fr_220px] gap-x-8 gap-y-6 pt-4 sm:pt-8">
+    <section className="grid lg:grid-cols-[60px_1fr] gap-x-8 gap-y-6 pt-4 sm:pt-8">
       <div className="hidden lg:block section-num pt-2">§ 1</div>
 
       <div className="max-w-2xl">
-        <div className="font-mono text-eyebrow uppercase text-muted mb-6">
-          Entry · 2026-04-25
-        </div>
-
         <h1 className="font-serif font-medium text-display-xl text-text">
           Encrypted swaps.
           <br />
@@ -172,15 +130,15 @@ function Hero() {
           A working implementation of <em>BTX threshold encryption</em>
           <sup className="cite">[1]</sup> wrapped as a DEX. Every order is
           encrypted in your browser and revealed only by a 2-of-3 committee
-          after the epoch closes. Sandwich attacks become{' '}
-          <span className="highlight">mathematically impossible</span> — not
-          merely hard.
+          after the epoch closes, making sandwich attacks{' '}
+          <span className="highlight">mathematically impossible</span> rather
+          than merely hard.
         </p>
 
         <p className="mt-4 text-mutedHi text-lg leading-relaxed max-w-xl">
           The settlement is atomic. Execution order inside the batch is
           shuffled by on-chain randomness. The AMM is gated by{' '}
-          <code className="font-mono text-[0.92em]">onlyPool</code>; no
+          <code className="font-mono text-[0.92em]">onlyPool</code>, so no
           external contract can interleave between reveal and settle.
         </p>
 
@@ -210,48 +168,25 @@ function Hero() {
           </Link>
         </div>
       </div>
-
-      <aside className="hidden lg:block pt-4 pl-1 border-l border-border">
-        <div className="marginalia">
-          new to BTX?
-          <br />
-          start with §5.2 <span className="marker">→</span>
-          <br />
-          <br />
-          138 tests pass
-          <br />
-          on every push.
-          <br />
-          <br />
-          <span className="text-dim font-sans text-marginal not-italic">
-            — M.
-          </span>
-        </div>
-      </aside>
     </section>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Entry — generic notebook section with margin column                 */
+/* Entry: generic notebook section                                     */
 /* ------------------------------------------------------------------ */
 
 function Entry({
   num,
-  margin,
   children,
 }: {
   num: string;
-  margin?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid lg:grid-cols-[60px_1fr_220px] gap-x-8 gap-y-4 scroll-mt-24">
+    <section className="grid lg:grid-cols-[60px_1fr] gap-x-8 gap-y-4 scroll-mt-24">
       <div className="hidden lg:block section-num pt-2">{num}</div>
       <div className="max-w-2xl">{children}</div>
-      <aside className="hidden lg:block pt-2 pl-1 border-l border-border">
-        {margin && <div className="marginalia">{margin}</div>}
-      </aside>
     </section>
   );
 }
@@ -265,7 +200,7 @@ function Steps() {
     {
       n: 'I',
       title: 'Encrypt locally',
-      body: 'Direction, amount, slippage, recipient — all encrypted to a threshold public key under BLS12-381. The plaintext never leaves your device.',
+      body: 'Direction, amount, slippage and recipient are all encrypted to a threshold public key under BLS12-381. The plaintext never leaves your device.',
     },
     {
       n: 'II',
@@ -364,7 +299,7 @@ function References() {
   ];
 
   return (
-    <section className="grid lg:grid-cols-[60px_1fr_220px] gap-x-8 gap-y-4">
+    <section className="grid lg:grid-cols-[60px_1fr] gap-x-8 gap-y-4">
       <div className="hidden lg:block section-num pt-2">References</div>
       <div className="max-w-2xl">
         <ol className="space-y-4 text-sm">
@@ -394,7 +329,6 @@ function References() {
           ))}
         </ol>
       </div>
-      <div className="hidden lg:block" />
     </section>
   );
 }

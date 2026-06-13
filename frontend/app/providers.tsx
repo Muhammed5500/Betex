@@ -1,6 +1,6 @@
 'use client';
 
-import { RainbowKitProvider, darkTheme, connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, lightTheme, connectorsForWallets } from '@rainbow-me/rainbowkit';
 import {
   metaMaskWallet,
   phantomWallet,
@@ -55,9 +55,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
-          theme={darkTheme({
-            accentColor: '#836ef9',
-            accentColorForeground: '#ffffff',
+          theme={lightTheme({
+            accentColor: '#1a1a1a',
+            accentColorForeground: '#fbf8ee',
             borderRadius: 'medium',
             fontStack: 'system',
             overlayBlur: 'small',
